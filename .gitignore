@@ -23,9 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 
-#env file
+# Keep environment variables out of version control
 .env
 
 # build folders
 build
 dist
+
+# Generated
+generated
+migrations

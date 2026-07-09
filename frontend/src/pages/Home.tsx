@@ -12,7 +12,7 @@ function Home() {
 						<img
 							src="AMD-Ryzen-5-3600_-1.png"
 							alt="CPU Picture"
-							className="scale-100"
+							className="scale-100 row-start-2"
 						/>
 					</CategoryCard>
 
@@ -20,14 +20,14 @@ function Home() {
 						<img
 							src="pngtree-gpu-power-phases-png-image_15512252.png"
 							alt="GPU Picture"
-							className="scale-150"
+							className="scale-150 row-start-2"
 						/>
 					</CategoryCard>
 					<CategoryCard title="Motherboards" variant="grape">
 						<img
 							src="intel-asus-rog-strix-z370-h-gaming-motherboard-atx-lga1151-socket-z370-lga1151-socket-lga-1151-intel-removebg-preview.png"
 							alt="Motherboard Picture"
-							className="scale-150"
+							className="scale-150 row-start-2"
 						/>
 					</CategoryCard>
 
@@ -35,21 +35,21 @@ function Home() {
 						<img
 							src="RAM-PC-Component-Computer-Memory-PNG-768x572-removebg-preview.png"
 							alt="RAM Picture"
-							className="scale-150 rotate-15"
+							className="scale-150 rotate-15 row-start-2"
 						/>
 					</CategoryCard>
 					<CategoryCard title="Cases" variant="amber">
 						<img
 							src="01_North-Momentum-Edition_Left-Front-1-540x540.webp"
 							alt="Case Picture"
-							className="scale-150"
+							className="scale-150 row-start-2"
 						/>
 					</CategoryCard>
 					<CategoryCard title="Storage" variant="fuchsia">
 						<img
 							src="2t_05dccd58c7.webp"
 							alt="GPU Picture"
-							className="scale-170 rotate-2 -mr-5 -mt-4"
+							className="scale-170 rotate-2 -mr-5 -mt-4 row-start-2"
 						/>
 					</CategoryCard>
 				</div>
