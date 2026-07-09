@@ -3,13 +3,19 @@
 
 @layer base {
 	h1 {
-		@apply text-text-900 font-bold text-[clamp(0.75rem,2vw,1.5rem)];
+		@apply text-text-900 font-bold text-[clamp(1.5rem,3.3vw,5rem)];
 	}
 	h2 {
+		@apply text-text-900 font-bold text-[clamp(0.75rem,2vw,1.5rem)];
+	}
+	h3 {
 		@apply text-text-900 text-[clamp(0.5rem,1.8vw,1.125rem)];
 	}
+	p {
+		@apply text-text-100 font-semibold text-[clamp(0.9rem,1.7vw,1.3rem)];
+	}
 	body {
-		@apply antialiased bg-background-100 font-inter;
+		@apply antialiased bg-background-50 font-inter overflow-x-hidden;
 	}
 }
 
