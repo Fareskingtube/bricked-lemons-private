@@ -1,17 +1,21 @@
 import express from "express";
 import dotenv from "dotenv";
 import ProductRouter from "./routes/productsRouter.js";
+import AuthRouter from "./routes/authRouter.js";
 import { connectDB, disconnectDB } from "./config/db.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 dotenv.config();
 
 app.use(express.json());
+app.use(cookieParser())
 
 const PORT = process.env.PORT || 5000;
 
 app.use("/api/products", ProductRouter);
+app.use("/api/auth", AuthRouter);
 
 
 let server: ReturnType<typeof app.listen>;
