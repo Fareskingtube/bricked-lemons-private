@@ -1,39 +1,59 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import request from "supertest";
 import express from "express";
-import { mockDeep } from "jest-mock-extended";
 import ProductRouter from "../routes/productsRouter.js";
 
-// Mock your local Prisma client path before importing anything that uses it
-import { PrismaClient } from "../generated/prisma/client.js";
-const prismaMock = mockDeep<PrismaClient>();
+// 🚀 CHANGE THE PATTERN: Wrap mock setups inside vi.hoisted()
+const { mockFindMany, mockCount } = vi.hoisted(() => {
+  return {
+    mockFindMany: vi.fn(),
+    mockCount: vi.fn(),
+  };
+});
 
-jest.mock("../prisma.js", () => ({
+// Now this factory can safely read them without a ReferenceError
+vi.mock("../config/db.js", () => ({
   __esModule: true,
-  prisma: prismaMock,
+  prisma: {
+    product: {
+      findMany: mockFindMany,
+      count: mockCount,
+    },
+  },
 }));
 
+// Set up the Express sandbox app
 const app = express();
 app.use(express.json());
 app.use("/api/products", ProductRouter);
 
 describe("GET /api/products", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
-  it("should retrieve products filtering by category and applying pagination", async () => {
-    const mockDbProducts = [
-      { id: 1, name: "Mechanical Keyboard", price: 89.99, category: "Electronics", createdAt: new Date() },
+  it("should return a paginated list of products matching the filters", async () => {
+    const sampleDbProducts = [
+      {
+        id: 1,
+        name: "Mechanical Keyboard",
+        price: 89.99,
+        category: "Electronics",
+        createdAt: new Date(),
+      },
     ];
 
-    prismaMock.product.findMany.mockResolvedValue(mockDbProducts);
-    prismaMock.product.count.mockResolvedValue(1);
+    mockFindMany.mockResolvedValue(sampleDbProducts);
+    mockCount.mockResolvedValue(1);
 
-    const response = await request(app).get("/api/products?category=Electronics&page=1&limit=5");
+    const response = await request(app).get(
+      "/api/products?search=Keyboard&category=Electronics&page=1&limit=5"
+    );
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
     expect(response.body.data).toHaveLength(1);
+    expect(response.body.data[0].name).toBe("Mechanical Keyboard");
     expect(response.body.pagination).toEqual({
       totalItems: 1,
       currentPage: 1,
@@ -42,13 +62,28 @@ describe("GET /api/products", () => {
     });
   });
 
-  it("should return a 500 error if the database operation fails", async () => {
-    prismaMock.product.findMany.mockRejectedValue(new Error("Database disconnected"));
+  it("should successfully fallback to default sort, page, and limits when no params are provided", async () => {
+    mockFindMany.mockResolvedValue([]);
+    mockCount.mockResolvedValue(0);
+
+    const response = await request(app).get("/api/products");
+
+    expect(response.status).toBe(200);
+    expect(response.body.pagination).toEqual({
+      totalItems: 0,
+      currentPage: 1,
+      totalPages: 0,
+      limit: 10,
+    });
+  });
+
+  it("should catch database errors cleanly and return a 500 status code", async () => {
+    mockFindMany.mockRejectedValue(new Error("Database connection timed out"));
 
     const response = await request(app).get("/api/products");
 
     expect(response.status).toBe(500);
     expect(response.body).toHaveProperty("success", false);
-    expect(response.body.message).toContain("Server encountered an error");
+    expect(response.body.message).toBe("Server encountered an error while retrieving products.");
   });
 });

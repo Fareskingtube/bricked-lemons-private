@@ -11,22 +11,28 @@
     "build": "tsc",
     "start": "node build/index.js",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "vitest run",
+    "test:integration": "dotenv -e .env.test -- prisma migrate deploy && dotenv -e .env.test -- vitest run src/tests/products.integration.spec.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^26.1.1",
+    "@types/supertest": "^7.2.0",
     "dotenv": "^17.4.2",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^10.6.0",
     "jest": "^30.4.2",
+    "jest-mock-extended": "^4.0.1",
     "nodemon": "^3.1.14",
     "prisma": "^7.8.0",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.63.0"
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

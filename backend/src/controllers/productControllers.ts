@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import prisma from "../../prisma.config.ts";
+import { prisma } from "../config/db.js";
 
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
