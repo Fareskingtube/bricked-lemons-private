@@ -2,14 +2,15 @@
 	// Visit https://aka.ms/tsconfig to read more about this file
 	"compilerOptions": {
 		// File Layout
-		"rootDir": "./src",
+		"rootDirs": ["./src", "."],
 		"outDir": "./build",
-
+		"allowImportingTsExtensions": true,
+    	"noEmit": true,
 		// Environment Settings
 		// See also https://aka.ms/tsconfig/module
 		"module": "nodenext",
 		"target": "esnext",
-		"types": ["node"],
+		"types": ["node", "jest"],
 		// For nodejs:
 		// "lib": ["esnext"],
 		// "types": ["node"],

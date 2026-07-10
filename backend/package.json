@@ -11,7 +11,9 @@
     "build": "tsc",
     "start": "node build/index.js",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/products.spec.ts",
+    "test:integration": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/products.integration.spec.ts --runInBand",
+    "test:msw": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/products.msw.spec.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -19,17 +21,29 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@jest/globals": "^30.4.1",
+    "@swc/core": "^1.15.43",
+    "@swc/jest": "^0.2.39",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^26.1.1",
+    "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
     "dotenv": "^17.4.2",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^10.6.0",
     "jest": "^30.4.2",
+    "jest-mock-extended": "^4.0.1",
+    "msw": "^2.15.0",
     "nodemon": "^3.1.14",
     "prisma": "^7.8.0",
     "supertest": "^7.2.2",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.63.0"
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
@@ -38,5 +52,10 @@
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3"
+    "express": "^5.2.1",
+    "pg": "^8.22.0"
+  },
+  "prisma": {
+    "seed": "node --import tsx prisma/seed.ts"
   }
 }
