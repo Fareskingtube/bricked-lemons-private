@@ -10,13 +10,13 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("🌱 Starting database seeding with Driver Adapter...");
+  console.log("Starting database seeding with Driver Adapter...");
 
   // Clean out existing data
   await prisma.product.deleteMany();
   await prisma.user.deleteMany();
 
-  console.log("👤 Seeding users...");
+  console.log("Seeding users...");
   await prisma.user.create({
     data: {
       username: "admin_citrus",
@@ -33,7 +33,7 @@ async function main() {
     },
   });
 
-  console.log("📦 Seeding products...");
+  console.log("Seeding products...");
   await prisma.product.createMany({
     data: [
       { name: "Sour Bricked Lemon", price: 5.99, category: "Fruits" },
@@ -44,12 +44,12 @@ async function main() {
     ],
   });
 
-  console.log("🏁 Seeding completed successfully!");
+  console.log("Seeding completed successfully!");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seeding failed:", e);
+    console.error("Seeding failed:", e);
     throw new Error("Seed process terminated due to errors.");
   })
   .finally(async () => {

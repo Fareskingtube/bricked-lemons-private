@@ -29,9 +29,10 @@ model User {
 }
 
 model Product {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   name      String
   price     Float
   category  String
+  
   createdAt DateTime @default(now())
 }
