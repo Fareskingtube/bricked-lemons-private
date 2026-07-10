@@ -1,5 +1,5 @@
 import { CgProfile } from "react-icons/cg";
-import { useContext, useRef, useState } from "react";
+import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,7 @@ function Login() {
 
 	// On submit query database for user and show toast based on Error or success
 	const handleSubmit = async () => {
+		// If email or password are empty how error toast
 		if (!forum.email || !forum.password) {
 			toast.error("Email and Password are required");
 			return;
@@ -64,7 +65,7 @@ function Login() {
                         placeholder:opacity-25 placeholder:text-text-800 p-3 rounded-3xl"
 					/>
 				</div>
-				<div className="-mt-3 relative">
+				<div className="-mt-3">
 					<h3 className="mb-3 ml-2">Password:</h3>
 					<input
 						type="password"

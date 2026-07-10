@@ -52,7 +52,16 @@ export const register = async (req: Request, res: Response) => {
 
 		res.cookie("token", token, cookieOptions);
 
-		return res.status(201).json({ message: "User created" });
+		return res
+			.status(201)
+			.json({
+				message: "User created",
+				user: {
+					id: newUser.id,
+					username: newUser.username,
+					role: newUser.role,
+				},
+			});
 	} catch (error) {
 		console.error(error);
 	}
@@ -85,7 +94,10 @@ export const login = async (req: Request, res: Response) => {
 
 		res.cookie("token", token, cookieOptions);
 
-		return res.status(200).json({ message: "User logged in successfully", user });
+		return res.status(200).json({
+			message: "User logged in successfully",
+			user: { id: user.id, username: user.username, role: user.role },
+		});
 	} catch (error) {
 		console.error(error);
 	}
@@ -98,7 +110,6 @@ export const logout = async (req: Request, res: Response) => {
 };
 
 export const getProfile = async (req: Request, res: Response) => {
-	res.json(req.user);
 	// Return user info from protect middleware
+	res.json(req.user);
 };
-
