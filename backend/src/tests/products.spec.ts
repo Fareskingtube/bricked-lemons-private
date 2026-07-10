@@ -1,7 +1,7 @@
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 import type { Request, Response } from "express";
 
-
+// Mocking the Prisma client methods used in the getProducts controller
 const mockFindMany = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
 const mockCount = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<number>>;
 

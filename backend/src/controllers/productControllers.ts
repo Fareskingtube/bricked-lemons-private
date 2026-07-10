@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../config/db.js";
-
+// function with pagination, filtering, and search queries n stuff
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
     const { search, category, sort, page = "1", limit = "10" } = req.query;
