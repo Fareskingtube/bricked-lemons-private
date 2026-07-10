@@ -1,40 +1,59 @@
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import axios from "axios";
 import { Toaster } from "react-hot-toast";
+import api from "./config/axios";
+
+export interface User {
+	id: string;
+	username: string;
+	role: string;
+}
+
+interface UserContextType {
+	user: User | null;
+	setUser: (user: User | null) => void;
+}
+
+export const UserContext = createContext<UserContextType | null>(null);
 
 function App() {
-	const [user, setUser] = useState(null);
-	const [error, setError] = useState("");
-	const [loading, setLoading] = useState(true);
-
+	// Creating user state to put in the UserContext
+	const [user, setUser] = useState<User | null>(null);
+	// Fetching current user info setting it to user state (Uses the JWT from HTTP only cookie to get current user)
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
-				const res = await axios.get("/auth/me");
-				setUser(res.data);
+				const res = await api.get("/auth/me");
+				const fetchedUser: User = {
+					id: res.data?.id,
+					username: res.data?.username,
+					role: res.data?.role,
+				};
+				setUser(fetchedUser);
 			} catch (error) {
 				setUser(null);
-			} finally {
-				setLoading(false);
 			}
 		};
+
+		fetchUser();
 	}, []);
 
 	return (
-		<BrowserRouter>
-			<Navbar />
-			<Toaster/>
-			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/login" element={<Login />} />
-				<Route path="/register" element={<Register />} />
-			</Routes>
-		</BrowserRouter>
+		<UserContext.Provider value={{user, setUser}}>
+			<BrowserRouter>
+				<Navbar />
+				<Toaster />
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/login" element={<Login />} />
+					<Route path="/register" element={<Register />} />
+				</Routes>
+			</BrowserRouter>
+		</UserContext.Provider>
 	);
 }
 
