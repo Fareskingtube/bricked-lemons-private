@@ -73,6 +73,5 @@ function Navbar() {
 		</nav>
 	);
 }
-<AiOutlineDown />;
 
 export default Navbar;

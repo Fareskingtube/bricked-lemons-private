@@ -13,5 +13,7 @@ RUN npx prisma generate
 # Load Schema to DB
 RUN npx prisma migrate dev --name init
 
+# Load Seed to DB
+RUN npx prisma db seed 
 
 CMD ["npm", "run", "dev"]

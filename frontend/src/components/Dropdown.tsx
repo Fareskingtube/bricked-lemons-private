@@ -51,7 +51,7 @@ function Dropdown({
 						<div className="py-1" role="none">
 							<Link
 								to="/profile"
-								className="block px-4 py-2 text-sm text-gray-700
+								className="block px-4 py-2 text-sm text-gray-100
                             hover:bg-background-200"
 								onClick={handleToggle}
 							>
@@ -60,11 +60,11 @@ function Dropdown({
 							{user?.role === "ADMIN" && (
 								<Link
 									to="/admin"
-									className="block px-4 py-2 text-sm text-red-400
+									className="block px-4 py-2 text-sm text-gray-100
                             hover:bg-background-200"
 									onClick={handleToggle}
 								>
-									Logout
+									Admin
 								</Link>
 							)}
 							<button
