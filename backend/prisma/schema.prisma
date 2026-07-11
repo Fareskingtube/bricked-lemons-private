@@ -33,7 +33,7 @@ model Product {
   name      String
   price     Float
   category  String
-  imageLnk String
+  imageLink String
   
   reviewRating Int @default(0)
   reviewCount  Int @default(0)

@@ -9,6 +9,8 @@ export interface product {
 	name: string;
 	price: number;
 	category: string;
+	reviewRating: number;
+	reviewCount: number;
 	createdAt: string;
 }
 
