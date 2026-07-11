@@ -34,6 +34,9 @@ model Product {
   price     Float
   category  String
   imagelink String
-  
+
+  reviewRating Int @default(0)
+  reviewCount  Int @default(0)
+
   createdAt DateTime @default(now())
 }
