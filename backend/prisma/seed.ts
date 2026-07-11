@@ -16,9 +16,10 @@ async function main() {
 	// Clean out existing data
 	await prisma.product.deleteMany();
 	await prisma.user.deleteMany();
-  const adminUsername = process.env.DEFAULT_ADMIN_USERNAME || "admin"
-  const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || "admin@brickedlemons.com"
-  const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || "Change_Me"
+	const adminUsername = process.env.DEFAULT_ADMIN_USERNAME || "admin";
+	const adminEmail =
+		process.env.DEFAULT_ADMIN_EMAIL || "admin@brickedlemons.com";
+	const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || "Change_Me";
 	const hashedPassword = await bcrypt.hash(adminPassword, 12);
 	console.log("Seeding users...");
 	await prisma.user.create({
@@ -26,7 +27,7 @@ async function main() {
 			username: adminUsername,
 			email: adminEmail,
 			password: hashedPassword,
-      role: "ADMIN",
+			role: "ADMIN",
 		},
 	});
 

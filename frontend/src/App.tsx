@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { Toaster } from "react-hot-toast";
 import api from "./config/axios";
+import Products from "./pages/Products";
 
 export interface User {
 	id: string;
@@ -51,6 +52,7 @@ function App() {
 					<Route path="/" element={<Home />} />
 					<Route path="/login" element={<Login />} />
 					<Route path="/register" element={<Register />} />
+					<Route path="/products" element={<Products />} />
 				</Routes>
 			</BrowserRouter>
 		</UserContext.Provider>

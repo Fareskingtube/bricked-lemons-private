@@ -3,7 +3,7 @@ import { prisma } from "../config/db.js";
 // function with pagination, filtering, and search queries n stuff
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { search, category, sort, page = "1", limit = "10" } = req.query;
+    const { search, category, sort, page = "1", limit = "20" } = req.query;
 
     const pageNum = parseInt(page as string, 10) || 1;
     const limitNum = parseInt(limit as string, 10) || 10;
