@@ -87,14 +87,8 @@ describe("Products Controller - Unit Tests", () => {
 		});
 	});
 
-	it("should accurately forward query search filters and custom limits", async () => {
-		req.query = {
-			search: "Lemon",
-			category: "Fruit",
-			page: "2",
-			limit: "5",
-			sort: "price_asc",
-		};
+  it("should accurately forward query search filters and custom limits", async () => {
+    req.query = { search: "Lemon", category: "Fruit", page: "2", limit: "5", orderBy: "price", orderDirection: "asc" };
 
 		mockFindMany.mockResolvedValue([]);
 		mockCount.mockResolvedValue(0);
@@ -114,19 +108,19 @@ describe("Products Controller - Unit Tests", () => {
 		expect(statusMock).toHaveBeenCalledWith(200);
 	});
 
-	it("should apply descending price sorting when sort parameter is price_desc", async () => {
-		req.query = { sort: "price_desc" };
-		mockFindMany.mockResolvedValue([]);
-		mockCount.mockResolvedValue(0);
+  it("should apply descending price sorting when sort parameter is price_desc", async () => {
+    req.query = { sort: "price_desc" };
+    mockFindMany.mockResolvedValue([]);
+    mockCount.mockResolvedValue(0);
 
-		await getProducts(req as Request, res as Response);
+    await getProducts(req as Request, res as Response);
 
-		expect(mockFindMany).toHaveBeenCalledWith(
-			expect.objectContaining({
-				orderBy: { price: "desc" },
-			}),
-		);
-	});
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: { price: "desc" },
+      })
+    );
+  });
 
 	it("should gracefully capture database execution exceptions and return a 500 state", async () => {
 		mockFindMany.mockRejectedValue(new Error("Database connection dropped"));
