@@ -2,7 +2,7 @@ import type { Dispatch } from "react";
 
 interface SelectProps {
 	name: string;
-	options: string[] | number[];
+	options: string[];
 	setValue: Dispatch<React.SetStateAction<any>>
 }
 
