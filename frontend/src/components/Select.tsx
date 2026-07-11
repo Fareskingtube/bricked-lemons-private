@@ -5,6 +5,7 @@ interface SelectProps {
 	options: string[] | number[];
 	setValue: Dispatch<React.SetStateAction<any>>;
 	default?: string | number;
+	values?: string[] | number[];
 }
 
 export function Select({
@@ -12,7 +13,14 @@ export function Select({
 	options,
 	setValue,
 	default: defaultValue,
+	values,
 }: SelectProps) {
+	const activeValues = values ?? options;
+	if (activeValues?.length !== options.length)
+		console.warn(
+			`Provided Values and Options for: ${name} filter aren't equal`,
+		);
+
 	return (
 		<select
 			className="[appearance:base-select] [&::picker(select)]:[appearance:base-select]
@@ -22,21 +30,22 @@ export function Select({
 			onChange={(e) => {
 				setValue(e.target.value);
 			}}
+			defaultValue={defaultValue ? defaultValue : ""}
 		>
 			<option
 				value=""
 				className="[&::checkmark]:hidden dark:checked:bg-accent-700 checked:bg-accent-300 
 					dark:hover:bg-accent-800 hover:bg-accent-200 px-2.5"
-				selected
+
 			>
 				{name}
 			</option>
-			{options.map((option) => (
+			{options.map((option, index) => (
 				<option
-					value={option}
+					value={activeValues[index]}
+					key={option}
 					className="[&::checkmark]:hidden dark:checked:bg-accent-700 checked:bg-accent-300 
 					dark:hover:bg-accent-800 hover:bg-accent-200 px-2.5"
-					selected={option === defaultValue && true}
 				>
 					{option}
 				</option>

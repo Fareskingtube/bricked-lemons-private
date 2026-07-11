@@ -4,11 +4,14 @@ import ProductList from "../components/ProductList";
 import api from "../config/axios";
 import { Link } from "react-router-dom";
 
-export interface product {
+export interface Product {
 	id: string;
 	name: string;
 	price: number;
 	category: string;
+	imageLink: string;
+	reviewRating: number;
+	reviewCount: number;
 	createdAt: string;
 }
 
@@ -16,20 +19,24 @@ function Products() {
 	const [loading, setLoading] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [limit, setLimit] = useState(20);
+	const [maxPrice, setMaxPrice] = useState<number | string>("");
+	const [minPrice, setMinPrice] = useState<number | string>("");
 	const [category, setCategory] = useState("");
-	const [products, setProducts] = useState<product[]>([]);
+	const [products, setProducts] = useState<Product[]>([]);
+	const [sortBy, setSortBy] = useState("");
+	const [sortDir, setSortDir] = useState("");
 
 	useEffect(() => {
 		const fetchProducts = async () => {
 			setLoading(true);
 			const res = await api.get(
-				`/products/?limit=${limit || 20}&page=${currentPage}&category=${category}`,
+				`/products/?limit=${limit || 20}&page=${currentPage}&category=${category}&minPrice=${minPrice}&maxPrice=${maxPrice}&orderBy=${sortBy}&orderDirection=${sortDir || "asc"}`,
 			);
 			setProducts(res.data?.data);
 			setLoading(false);
 		};
 		fetchProducts();
-	}, [currentPage, limit, category]);
+	}, [currentPage, limit, category, minPrice, maxPrice, sortBy, sortDir]);
 
 	return (
 		<div className="flex flex-col gap-13">
@@ -56,20 +63,46 @@ function Products() {
 					/>
 				</div>
 			</div>
-			<div className="flex gap-5 mx-10">
-				<Select
-					name="Category"
-					options={["GPU", "CPU", "RAM", "Storage", "Monitor", "Peripherals"]}
-					setValue={setCategory}
-				/>
-				<Select
-					name="Limit"
-					options={[10, 20, 30, 50, 100]}
-					setValue={setLimit}
-					default={20}
-				/>
+			<div className="flex justify-between mx-10">
+				<div className="flex gap-5">
+					<Select
+						name="Category"
+						options={["GPU", "CPU", "RAM", "Storage", "Monitor", "Peripherals"]}
+						setValue={setCategory}
+					/>
+					<Select
+						name="Limit"
+						options={[10, 20, 30, 50, 100]}
+						setValue={setLimit}
+					/>
+					<Select
+						name="Min Price"
+						options={[10, 100, 200, 300, 400, 500, 800, 1000, 1200]}
+						values={[9, 99, 199, 299, 399, 499, 799, 999, 1199]}
+						setValue={setMinPrice}
+					/>
+					<Select
+						name="Max Price"
+						options={[30, 100, 200, 300, 400, 500, 800, 1000, 1200, 1600]}
+						setValue={setMaxPrice}
+					/>
+				</div>
+				<div className="flex gap-5">
+					<Select
+						name="Sort Direction"
+						options={["Ascending", "Descending"]}
+						values={["asc", "desc"]}
+						setValue={setSortDir}
+					/>
+					<Select
+						name="Sort By"
+						options={["Recent", "Price", "Rating", "Name"]}
+						values={["createdAt", "price", "reviewRating", "name"]}
+						setValue={setSortBy}
+					/>
+				</div>
 			</div>
-			{/* <ProductList products={products} /> */}
+			<ProductList products={products} />
 		</div>
 	);
 }

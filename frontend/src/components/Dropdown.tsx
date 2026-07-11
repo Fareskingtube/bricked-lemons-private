@@ -51,7 +51,7 @@ function Dropdown({
 						<div className="py-1" role="none">
 							<Link
 								to="/profile"
-								className="block px-4 py-2 text-sm text-gray-100
+								className="block px-4 py-2 text-sm text-text-900
                             hover:bg-background-200"
 								onClick={handleToggle}
 							>
@@ -60,7 +60,7 @@ function Dropdown({
 							{user?.role === "ADMIN" && (
 								<Link
 									to="/admin"
-									className="block px-4 py-2 text-sm text-gray-100
+									className="block px-4 py-2 text-sm text-text-900
                             hover:bg-background-200"
 									onClick={handleToggle}
 								>
@@ -79,7 +79,7 @@ function Dropdown({
 						<div className="py-1" role="none">
 							<Link
 								to="/login"
-								className="block px-4 py-2 text-sm text-gray-100
+								className="block px-4 py-2 text-sm text-text-900
                             hover:bg-background-200"
 								onClick={handleToggle}
 							>
@@ -87,7 +87,7 @@ function Dropdown({
 							</Link>
 							<Link
 								to="/register"
-								className="block px-4 py-2 text-sm text-gray-100
+								className="block px-4 py-2 text-sm text-text-900
                             hover:bg-background-200"
 								onClick={handleToggle}
 							>

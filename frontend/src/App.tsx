@@ -34,12 +34,14 @@ function App() {
 					username: res.data?.username,
 					role: res.data?.role,
 				};
+				console.log(fetchedUser);
+				
 				setUser(fetchedUser);
 			} catch (error) {
 				setUser(null);
 			}
 		};
-
+		if (!user) return
 		fetchUser();
 	}, []);
 
