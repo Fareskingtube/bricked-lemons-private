@@ -6,15 +6,15 @@
   "repository": "github:Fareskingtube/bricked-lemons",
   "type": "module",
   "main": "index.js",
-  "scripts": {
-    "dev": "nodemon",
-    "build": "tsc",
-    "start": "node build/index.js",
-    "lint": "eslint .",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/products.spec.ts",
-    "test:integration": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/products.integration.spec.ts --runInBand",
-    "test:msw": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/products.msw.spec.ts"
-  },
+ "scripts": {
+  "dev": "nodemon",
+  "build": "tsc",
+  "start": "node build/index.js",
+  "lint": "eslint .",
+  "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=integration --testPathIgnorePatterns=msw",
+  "test:integration": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/products.integration.spec.ts --runInBand",
+  "test:msw": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/products.msw.spec.ts"
+},
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/bcrypt": "^6.0.0",
