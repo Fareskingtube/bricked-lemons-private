@@ -55,3 +55,78 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     });
   }
 };
+
+export const getProductById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Product ID is required.",
+      });
+      return;
+    }
+    if (!(id instanceof String)){
+      res.status(400).json({
+        success: false,
+        message: "Product ID must be a string.",
+      });
+      return;
+    }
+    const product = await prisma.product.findUnique({
+     where: { id: id as string },
+    });
+
+    if (!product) {
+      res.status(404).json({
+        success: false,
+        message: "Product not found.",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    console.error("Error fetching product by ID:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server encountered an error while retrieving the product.",
+    });
+  }
+}
+
+export const createProduct = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, description, price, category } = req.body;
+    
+    if (!name || !description || !price || !category) {
+      res.status(400).json({
+        success: false,
+        message: "give me all the data, you dumbass.",
+      });
+      return;
+    } 
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description,
+        price: parseFloat(price as string),
+        category: category as string,
+      },
+    });
+    res.status(201).json({
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server encountered an error while creating the product.",
+    });
+  }
+}
+
