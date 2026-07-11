@@ -8,7 +8,7 @@ const cookieOptions: CookieOptions = {
 	httpOnly: true,
 	secure: process.env.NODE_ENV === "production",
 	sameSite: "strict",
-	maxAge: 30 * 1440000, // 30 Days
+	maxAge: 30 * 86400000, // 30 Days
 };
 
 // Generating JWT token
@@ -62,6 +62,7 @@ export const register = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.error(error);
+		return res.status(500).json({ message: "Internal server error", error });
 	}
 };
 export const login = async (req: Request, res: Response) => {
@@ -84,7 +85,7 @@ export const login = async (req: Request, res: Response) => {
 		// Comparing if password is a match
 		const isMatch = await bcrypt.compare(password, user.password);
 
-		//  if password and hashed password on db don't match return HTTP 401 Unauthorized
+		//  If password and hashed password on db don't match return HTTP 401 Unauthorized
 		if (!isMatch)
 			return res.status(401).json({ message: "Invalid email or password" });
 
@@ -98,6 +99,7 @@ export const login = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.error(error);
+		return res.status(500).json({ message: "Internal server error", error });
 	}
 };
 
