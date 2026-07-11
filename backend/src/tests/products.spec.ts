@@ -54,7 +54,7 @@ describe("Products Controller - Unit Tests", () => {
         totalItems: 1,
         currentPage: 1,
         totalPages: 1,
-        limit: 10,
+        limit: 20,
       },
       data: mockProducts,
     });
