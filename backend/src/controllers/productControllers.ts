@@ -8,7 +8,10 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     const pageNum = parseInt(page as string, 10) || 1;
     const limitNum = parseInt(limit as string, 10) || 10;
     const skip = (pageNum - 1) * limitNum;
-
+    if (limitNum > 100) 
+      {
+       res.status(413).json({ message: "Page size larger than 100" });
+  } 
     const whereClause: any = {};
 
     if (search) {
@@ -63,13 +66,6 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
       res.status(400).json({
         success: false,
         message: "Product ID is required.",
-      });
-      return;
-    }
-    if (!(id instanceof String)){
-      res.status(400).json({
-        success: false,
-        message: "Product ID must be a string.",
       });
       return;
     }
