@@ -109,64 +109,64 @@ describe("Products Controller - Unit Tests", () => {
 	// });
 
 	it("should apply ascending price sorting via orderBy/orderDirection", async () => {
-  req.query = { orderBy: "price", orderDirection: "asc" };
-  mockFindMany.mockResolvedValue([]);
-  mockCount.mockResolvedValue(0);
+		req.query = { orderBy: "price", orderDirection: "asc" };
+		mockFindMany.mockResolvedValue([]);
+		mockCount.mockResolvedValue(0);
 
-  await getProducts(req as Request, res as Response);
+		await getProducts(req as Request, res as Response);
 
-  expect(mockFindMany).toHaveBeenCalledWith(
-    expect.objectContaining({ orderBy: { price: "asc" } })
-  );
-});
+		expect(mockFindMany).toHaveBeenCalledWith(
+			expect.objectContaining({ orderBy: { price: "asc" } }),
+		);
+	});
 
-it("should apply descending price sorting via orderBy/orderDirection", async () => {
-  req.query = { orderBy: "price", orderDirection: "desc" };
-  mockFindMany.mockResolvedValue([]);
-  mockCount.mockResolvedValue(0);
+	it("should apply descending price sorting via orderBy/orderDirection", async () => {
+		req.query = { orderBy: "price", orderDirection: "desc" };
+		mockFindMany.mockResolvedValue([]);
+		mockCount.mockResolvedValue(0);
 
-  await getProducts(req as Request, res as Response);
+		await getProducts(req as Request, res as Response);
 
-  expect(mockFindMany).toHaveBeenCalledWith(
-    expect.objectContaining({ orderBy: { price: "desc" } })
-  );
-});
+		expect(mockFindMany).toHaveBeenCalledWith(
+			expect.objectContaining({ orderBy: { price: "desc" } }),
+		);
+	});
 
-it("should default to createdAt desc when no orderBy/orderDirection given", async () => {
-  req.query = {};
-  mockFindMany.mockResolvedValue([]);
-  mockCount.mockResolvedValue(0);
+	it("should default to createdAt desc when no orderBy/orderDirection given", async () => {
+		req.query = {};
+		mockFindMany.mockResolvedValue([]);
+		mockCount.mockResolvedValue(0);
 
-  await getProducts(req as Request, res as Response);
+		await getProducts(req as Request, res as Response);
 
-  expect(mockFindMany).toHaveBeenCalledWith(
-    expect.objectContaining({ orderBy: { createdAt: "desc" } })
-  );
-});
+		expect(mockFindMany).toHaveBeenCalledWith(
+			expect.objectContaining({ orderBy: { createdAt: "desc" } }),
+		);
+	});
 
-it("should fall back to createdAt when orderBy is not an allowed field", async () => {
-  req.query = { orderBy: "notARealField" };
-  mockFindMany.mockResolvedValue([]);
-  mockCount.mockResolvedValue(0);
+	it("should fall back to createdAt when orderBy is not an allowed field", async () => {
+		req.query = { orderBy: "notARealField" };
+		mockFindMany.mockResolvedValue([]);
+		mockCount.mockResolvedValue(0);
 
-  await getProducts(req as Request, res as Response);
+		await getProducts(req as Request, res as Response);
 
-  expect(mockFindMany).toHaveBeenCalledWith(
-    expect.objectContaining({ orderBy: { createdAt: "desc" } })
-  );
-});
+		expect(mockFindMany).toHaveBeenCalledWith(
+			expect.objectContaining({ orderBy: { createdAt: "desc" } }),
+		);
+	});
 
-it("should fall back to desc when orderDirection is invalid", async () => {
-  req.query = { orderBy: "price", orderDirection: "sideways" };
-  mockFindMany.mockResolvedValue([]);
-  mockCount.mockResolvedValue(0);
+	it("should fall back to desc when orderDirection is invalid", async () => {
+		req.query = { orderBy: "price", orderDirection: "sideways" };
+		mockFindMany.mockResolvedValue([]);
+		mockCount.mockResolvedValue(0);
 
-  await getProducts(req as Request, res as Response);
+		await getProducts(req as Request, res as Response);
 
-  expect(mockFindMany).toHaveBeenCalledWith(
-    expect.objectContaining({ orderBy: { price: "desc" } })
-  );
-});
+		expect(mockFindMany).toHaveBeenCalledWith(
+			expect.objectContaining({ orderBy: { price: "desc" } }),
+		);
+	});
 
 	it("should gracefully capture database execution exceptions and return a 500 state", async () => {
 		mockFindMany.mockRejectedValue(new Error("Database connection dropped"));

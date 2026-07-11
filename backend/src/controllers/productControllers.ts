@@ -1,99 +1,102 @@
 import type { Request, Response } from "express";
 import { prisma } from "../config/db.js";
 // function with pagination, filtering, and search queries n stuff
-export const getProducts = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const {
-      search,
-      category,
-      orderBy = "createdAt",
-      orderDirection = "desc",
-      minPrice,
-      maxPrice,
-      page = "1",
-      limit = "20",
-    } = req.query;
+export const getProducts = async (
+	req: Request,
+	res: Response,
+): Promise<void> => {
+	try {
+		const {
+			search,
+			category,
+			orderBy = "createdAt",
+			orderDirection = "desc",
+			minPrice,
+			maxPrice,
+			page = "1",
+			limit = "20",
+		} = req.query;
 
-    const pageNum = parseInt(page as string, 10) || 1;
-    const limitNum = parseInt(limit as string, 10) || 10;
-    const skip = (pageNum - 1) * limitNum;
+		const pageNum = parseInt(page as string, 10) || 1;
+		const limitNum = parseInt(limit as string, 10) || 10;
+		const skip = (pageNum - 1) * limitNum;
 
-    if (limitNum > 100) {
-      res.status(413).json({ message: "Page size larger than 100" });
-      return;
-    }
+		if (limitNum > 100) {
+			res.status(413).json({ message: "Page size larger than 100" });
+			return;
+		}
 
-    const whereClause: any = {};
+		const whereClause: any = {};
 
-    if (search) {
-      whereClause.name = {
-        contains: search as string,
-        mode: "insensitive",
-      };
-    }
+		if (search) {
+			whereClause.name = {
+				contains: search as string,
+				mode: "insensitive",
+			};
+		}
 
-    if (category) {
-      whereClause.category = category as string;
-    }
+		if (category) {
+			whereClause.category = category as string;
+		}
 
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      whereClause.price = {};
+		if (minPrice !== undefined || maxPrice !== undefined) {
+			whereClause.price = {};
 
-      if (minPrice !== undefined) {
-        const min = parseFloat(minPrice as string);
-        if (!isNaN(min)) whereClause.price.gte = min;
-      }
+			if (minPrice !== undefined) {
+				const min = parseFloat(minPrice as string);
+				if (!isNaN(min)) whereClause.price.gte = min;
+			}
 
-      if (maxPrice !== undefined) {
-        const max = parseFloat(maxPrice as string);
-        if (!isNaN(max)) whereClause.price.lte = max;
-      }
+			if (maxPrice !== undefined) {
+				const max = parseFloat(maxPrice as string);
+				if (!isNaN(max)) whereClause.price.lte = max;
+			}
 
-      if (Object.keys(whereClause.price).length === 0) {
-        delete whereClause.price;
-      }
-    }
+			if (Object.keys(whereClause.price).length === 0) {
+				delete whereClause.price;
+			}
+		}
 
-    const allowedOrderFields = ["createdAt", "price", "name", "reviewRating"];
-    const allowedDirections = ["asc", "desc"];
+		const allowedOrderFields = ["createdAt", "price", "name", "reviewRating"];
+		const allowedDirections = ["asc", "desc"];
 
-    const orderField = allowedOrderFields.includes(orderBy as string)
-      ? (orderBy as string)
-      : "createdAt";
+		const orderField = allowedOrderFields.includes(orderBy as string)
+			? (orderBy as string)
+			: "createdAt";
 
-    const orderDir = allowedDirections.includes(orderDirection as string)
-      ? (orderDirection as string)
-      : "desc";
+		const orderDir = allowedDirections.includes(orderDirection as string)
+			? (orderDirection as string)
+			: "desc";
 
-    const orderByClause: any = { [orderField]: orderDir };
+		const orderByClause: any = { [orderField]: orderDir };
 
-    const [products, totalItems] = await Promise.all([
-      prisma.product.findMany({
-        where: whereClause,
-        orderBy: orderByClause,
-        skip,
-        take: limitNum,
-      }),
-      prisma.product.count({ where: whereClause }),
-    ]);
+		const [products, totalItems] = await Promise.all([
+			prisma.product.findMany({
+				where: whereClause,
+				orderBy: orderByClause,
+				skip,
+				take: limitNum,
+			}),
+			prisma.product.count({ where: whereClause }),
+		]);
 
-    res.status(200).json({
-      success: true,
-      pagination: {
-        totalItems,
-        currentPage: pageNum,
-        totalPages: Math.ceil(totalItems / limitNum),
-        limit: limitNum,
-      },
-      data: products,
-    });
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server encountered an error while retrieving products.",
-    });
-  }
+		res.status(200).json({
+			success: true,
+			pagination: {
+				totalItems,
+				currentPage: pageNum,
+				totalPages: Math.ceil(totalItems / limitNum),
+				limit: limitNum,
+			},
+			data: products,
+		});
+	} catch (error) {
+		console.error("Error fetching products:", error);
+		res.status(500).json({
+			success: false,
+			message: "Server encountered an error while retrieving products.",
+		});
+	}
 };
 
 export const getProductById = async (
