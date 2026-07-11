@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from "react";
+import { Link } from "react-router-dom";
 
 const THEME_VARIANTS = {
 	amber:
@@ -26,12 +27,13 @@ function CategoryCard({
 	const variantClass = THEME_VARIANTS[variant] || THEME_VARIANTS.amber;
 
 	return (
-		<div
+		<Link 
+			to={"/products"}
 			className={`h-70 min-w-[10vw] ${variantClass} rounded-2xl relative grid grid-rows-[1fr_3fr] gap-3 place-content-center place-items-center overflow-hidden shadow-[2px_2px_15px_transparent] dark:hover:shadow-accent-600/30 hover:shadow-black/75 transition-all duration-300`}
 		>
 			<h3 className="text-950 dark:text-text-50 font-bold z-1 absolute top-5">{title}</h3>
 			{children}
-		</div>
+		</Link>
 	);
 }
 

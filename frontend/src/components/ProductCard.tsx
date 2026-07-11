@@ -7,7 +7,6 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
 	return (
 		<div
-			key={product.id}
 			className="w-65 overflow-hidden flex flex-col gap-2 bg-background-100 p-3 rounded-2xl hover:bg-background-200 transition-colors duration-90"
 		>
 			<h3 className="truncate">{product.name}</h3>

@@ -9,7 +9,7 @@ function ProductList({ products }: ProductListProps) {
 	return (
 		<div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mx-10">
 			{products.map((product) => (
-				<ProductCard product={product} />
+				<ProductCard product={product} key={product.id} />
 			))}
 		</div>
 	);

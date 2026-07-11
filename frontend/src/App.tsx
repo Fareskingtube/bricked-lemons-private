@@ -55,6 +55,7 @@ function App() {
 					<Route path="/login" element={<Login />} />
 					<Route path="/register" element={<Register />} />
 					<Route path="/products" element={<Products />} />
+					<Route path="/products/search/:search" element={<Products />} />
 				</Routes>
 			</BrowserRouter>
 		</UserContext.Provider>
