@@ -133,42 +133,18 @@ describe("Auth Controller - register", () => {
     expect(responseBody.user.password).toBeUndefined();
   });
 
-  // NOTE: register's catch block only console.errors — it never sends a
-  // response on failure. This test documents that current (broken) behavior
-  // rather than asserting a 500, since none is actually sent.
-  it("currently sends no response when prisma throws (known bug — no 500 handling)", async () => {
-    req.body = { username: "alex", email: "alex@example.com", password: "password123" };
-    mockFindUnique.mockRejectedValue(new Error("Database connection dropped"));
-    jest.spyOn(console, "error").mockImplementation(() => {});
+  it("should return 500 if prisma throws an error", async () => {
+  req.body = { username: "alex", email: "alex@example.com", password: "password123" };
+  mockFindUnique.mockRejectedValue(new Error("Database connection dropped"));
+  jest.spyOn(console, "error").mockImplementation(() => {});
 
-    await register(req as Request, res as Response);
+  await register(req as Request, res as Response);
 
-    expect(statusMock).not.toHaveBeenCalled();
-    expect(jsonMock).not.toHaveBeenCalled();
-  });
+  expect(statusMock).toHaveBeenCalledWith(500);
+  expect(jsonMock).toHaveBeenCalledWith(
+    expect.objectContaining({ message: "Internal server error" })
+  );
 });
-
-describe("Auth Controller - login", () => {
-  let req: Partial<Request>;
-  let res: Partial<Response>;
-  let jsonMock: jest.MockedFunction<any>;
-  let statusMock: jest.MockedFunction<any>;
-  let cookieMock: jest.MockedFunction<any>;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    req = { body: {} };
-    jsonMock = jest.fn().mockImplementation(() => ({} as Response));
-    statusMock = jest.fn().mockImplementation(() => ({ json: jsonMock } as any));
-    cookieMock = jest.fn();
-
-    res = {
-      status: statusMock as any,
-      json: jsonMock as any,
-      cookie: cookieMock as any,
-    };
-  });
-
   it("should return 400 if email or password is missing", async () => {
     req.body = { email: "alex@example.com" }; // no password
 
@@ -234,19 +210,19 @@ describe("Auth Controller - login", () => {
     });
   });
 
-  // Same known bug as register: no response sent on a thrown error.
-  it("currently sends no response when prisma throws (known bug — no 500 handling)", async () => {
-    req.body = { email: "alex@example.com", password: "password123" };
-    mockFindUnique.mockRejectedValue(new Error("Database connection dropped"));
-    jest.spyOn(console, "error").mockImplementation(() => {});
+  it("should set the cookie with a 30-day maxAge", async () => {
+  req.body = { username: "alex", email: "alex@example.com", password: "password123" };
+  mockFindUnique.mockResolvedValue(null);
+  mockBcryptHash.mockResolvedValue("hashed-password");
+  mockCreate.mockResolvedValue({ id: "id1", username: "alex", email: "alex@example.com", role: "USER" });
+  mockJwtSign.mockReturnValue("signed-jwt-token");
 
-    await login(req as Request, res as Response);
+  await register(req as Request, res as Response);
 
-    expect(statusMock).not.toHaveBeenCalled();
-    expect(jsonMock).not.toHaveBeenCalled();
-  });
+  const [, , options] = cookieMock.mock.calls[0];
+  expect(options.maxAge).toBe(30 * 86400000); // 30 days in ms
 });
-
+})
 describe("Auth Controller - logout", () => {
   it("should clear the token cookie and return 200", async () => {
     const cookieMock = jest.fn();
