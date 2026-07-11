@@ -12,7 +12,6 @@ const cookieOptions: CookieOptions = {
 };
 
 // Generating JWT token
-// TODO: needs testing
 const generateToken = (id: string, role: string) => {
 	// Parsing JWT_SECRET with base64 and casting it to Secret
 	const secret: Secret = Buffer.from(process.env.JWT_SECRET!, "base64");

@@ -4,6 +4,7 @@ import ProductRouter from "./routes/productsRouter.js";
 import AuthRouter from "./routes/authRouter.js";
 import { connectDB, disconnectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const app = express();
 
@@ -11,6 +12,13 @@ dotenv.config();
 
 app.use(express.json());
 app.use(cookieParser());
+
+const CORS_ORIGIN = process.env.FRONTEND_URL || "http://localhost:5173/"
+
+app.use(cors({
+	origin: CORS_ORIGIN,
+	credentials: true
+}))
 
 const PORT = process.env.PORT || 5000;
 
