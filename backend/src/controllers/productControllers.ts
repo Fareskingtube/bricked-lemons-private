@@ -100,9 +100,9 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, price, category } = req.body;
+    const { name, imagelink, price, category } = req.body;
     
-    if (!name || !description || !price || !category) {
+    if (!name || !imagelink || !price || !category) {
       res.status(400).json({
         success: false,
         message: "give me all the data, you dumbass.",
@@ -111,10 +111,10 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
     } 
     const product = await prisma.product.create({
       data: {
-        name,
-        description,
+        name: name as string,
         price: parseFloat(price as string),
         category: category as string,
+        imagelink: imagelink as string
       },
     });
     res.status(201).json({
