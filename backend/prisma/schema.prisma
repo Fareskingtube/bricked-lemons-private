@@ -33,6 +33,7 @@ model Product {
   name      String
   price     Float
   category  String
+  imagelink String
   
   createdAt DateTime @default(now())
 }
