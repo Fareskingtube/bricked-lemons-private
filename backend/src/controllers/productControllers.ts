@@ -3,15 +3,17 @@ import { prisma } from "../config/db.js";
 // function with pagination, filtering, and search queries n stuff
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { search, category, sort, page = "1", limit = "20" } = req.query;
+    const { search, category, sort, minPrice, maxPrice, page = "1", limit = "20" } = req.query;
 
     const pageNum = parseInt(page as string, 10) || 1;
     const limitNum = parseInt(limit as string, 10) || 10;
     const skip = (pageNum - 1) * limitNum;
-    if (limitNum > 100) 
-      {
-       res.status(413).json({ message: "Page size larger than 100" });
-  } 
+
+    if (limitNum > 100) {
+      res.status(413).json({ message: "Page size larger than 100" });
+      return;
+    }
+
     const whereClause: any = {};
 
     if (search) {
@@ -25,11 +27,29 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       whereClause.category = category as string;
     }
 
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      whereClause.price = {};
+
+      if (minPrice !== undefined) {
+        const min = parseFloat(minPrice as string);
+        if (!isNaN(min)) whereClause.price.gte = min;
+      }
+
+      if (maxPrice !== undefined) {
+        const max = parseFloat(maxPrice as string);
+        if (!isNaN(max)) whereClause.price.lte = max;
+      }
+
+      // If neither parsed to a valid number, drop the empty filter object
+      if (Object.keys(whereClause.price).length === 0) {
+        delete whereClause.price;
+      }
+    }
+
     let orderByClause: any = { createdAt: "desc" };
     if (sort === "price_asc") orderByClause = { price: "asc" };
     if (sort === "price_desc") orderByClause = { price: "desc" };
 
-    // Fetch the products and total count concurrently
     const [products, totalItems] = await Promise.all([
       prisma.product.findMany({
         where: whereClause,

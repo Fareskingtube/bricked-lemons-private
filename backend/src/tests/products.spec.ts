@@ -109,6 +109,62 @@ describe("Products Controller - Unit Tests", () => {
       message: "Server encountered an error while retrieving products.",
     });
   });
+  it("should filter by minPrice and maxPrice when both are provided", async () => {
+  req.query = { minPrice: "10", maxPrice: "50" };
+  mockFindMany.mockResolvedValue([]);
+  mockCount.mockResolvedValue(0);
+
+  await getProducts(req as Request, res as Response);
+
+  expect(mockFindMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: expect.objectContaining({
+        price: { gte: 10, lte: 50 },
+      }),
+    })
+  );
+});
+
+it("should filter by minPrice only when maxPrice is not provided", async () => {
+  req.query = { minPrice: "20" };
+  mockFindMany.mockResolvedValue([]);
+  mockCount.mockResolvedValue(0);
+
+  await getProducts(req as Request, res as Response);
+
+  expect(mockFindMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: expect.objectContaining({
+        price: { gte: 20 },
+      }),
+    })
+  );
+});
+
+it("should ignore non-numeric minPrice/maxPrice values", async () => {
+  req.query = { minPrice: "abc", maxPrice: "xyz" };
+  mockFindMany.mockResolvedValue([]);
+  mockCount.mockResolvedValue(0);
+
+  await getProducts(req as Request, res as Response);
+
+  expect(mockFindMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: {}, // no price filter, no search/category either
+    })
+  );
+});
+
+it("should return 413 and not query the database when limit exceeds 100", async () => {
+  req.query = { limit: "150" };
+
+  await getProducts(req as Request, res as Response);
+
+  expect(statusMock).toHaveBeenCalledWith(413);
+  expect(jsonMock).toHaveBeenCalledWith({ message: "Page size larger than 100" });
+  expect(mockFindMany).not.toHaveBeenCalled();
+  expect(statusMock).not.toHaveBeenCalledWith(200);
+});
 });
 describe("Products Controller - getProductById", () => {
   let req: Partial<Request>;
@@ -139,9 +195,6 @@ describe("Products Controller - getProductById", () => {
   });
 
   it("should return the product when a valid id is provided", async () => {
-    // NOTE: this will currently fail due to the `id instanceof String` bug in
-    // getProductById — primitive strings are never `instanceof String`, so
-    // every request is rejected with 400 before reaching prisma.
     req.params = { id: "abc123" };
     const mockProduct = { id: "abc123", name: "Lemon Keyboard", price: 45.0, category: "Electronics" };
     mockFindUnique.mockResolvedValue(mockProduct);
