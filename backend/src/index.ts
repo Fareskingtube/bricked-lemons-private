@@ -10,13 +10,12 @@ const app = express();
 dotenv.config();
 
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 
 const PORT = process.env.PORT || 5000;
 
 app.use("/api/products", ProductRouter);
 app.use("/api/auth", AuthRouter);
-
 
 let server: ReturnType<typeof app.listen>;
 
@@ -25,7 +24,6 @@ connectDB().then(() => {
 		console.log(`Server is running at: http:localhost:${PORT}`);
 	});
 });
-
 
 // Three error handling functions got from https://github.com/machadop1407/NodeJS-ExpressJS-BackendCourse/blob/main/src/server.js
 // Handle unhandled promise rejections (e.g., database connection errors)

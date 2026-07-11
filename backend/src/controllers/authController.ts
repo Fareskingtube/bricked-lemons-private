@@ -52,16 +52,14 @@ export const register = async (req: Request, res: Response) => {
 
 		res.cookie("token", token, cookieOptions);
 
-		return res
-			.status(201)
-			.json({
-				message: "User created",
-				user: {
-					id: newUser.id,
-					username: newUser.username,
-					role: newUser.role,
-				},
-			});
+		return res.status(201).json({
+			message: "User created",
+			user: {
+				id: newUser.id,
+				username: newUser.username,
+				role: newUser.role,
+			},
+		});
 	} catch (error) {
 		console.error(error);
 	}

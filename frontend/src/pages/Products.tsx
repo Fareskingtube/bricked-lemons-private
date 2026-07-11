@@ -14,7 +14,7 @@ export interface product {
 
 function Products() {
 	const [loading, setLoading] = useState(false);
-	const [currentPage, setcurrentPage] = useState(1);
+	const [currentPage, setCurrentPage] = useState(1);
 	const [limit, setLimit] = useState(20);
 	const [category, setCategory] = useState("");
 	const [products, setProducts] = useState<product[]>([]);
@@ -23,7 +23,7 @@ function Products() {
 		const fetchProducts = async () => {
 			setLoading(true);
 			const res = await api.get(
-				`/products/?limit=${limit}&page=${currentPage}&category=${category}`,
+				`/products/?limit=${limit || 20}&page=${currentPage}&category=${category}`,
 			);
 			setProducts(res.data?.data);
 			setLoading(false);
@@ -44,7 +44,7 @@ function Products() {
 						</h1>
 						<Link
 							to="products"
-							className="ml-4 w-fit p-3 bg-secondary-200 rounded-4xl hover:scale-110 
+							className="ml-4 w-fit p-3 dark:bg-secondary-200 bg-secondary-500 rounded-4xl hover:scale-110 
                             transition-all duration-100 not-md:self-center not-md:ml-0 not-md:mt-10"
 						>
 							<span className="font-bold text-accent-900">Buy Now</span>
@@ -56,8 +56,18 @@ function Products() {
 					/>
 				</div>
 			</div>
-			<div className="flex gap-10 mx-10">
-				<Select name="Category" options={["GPU", "CPU", "RAM", "Storage", "Monitor", "Peripherals"]} setValue={setCategory} />
+			<div className="flex gap-5 mx-10">
+				<Select
+					name="Category"
+					options={["GPU", "CPU", "RAM", "Storage", "Monitor", "Peripherals"]}
+					setValue={setCategory}
+				/>
+				<Select
+					name="Limit"
+					options={[10, 20, 30, 50, 100]}
+					setValue={setLimit}
+					default={20}
+				/>
 			</div>
 			{/* <ProductList products={products} /> */}
 		</div>

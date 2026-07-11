@@ -1,9 +1,20 @@
 import type { Request, Response } from "express";
 import { prisma } from "../config/db.js";
 // function with pagination, filtering, and search queries n stuff
-export const getProducts = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { search, category, sort, minPrice, maxPrice, page = "1", limit = "20" } = req.query;
+export const getProducts = async (
+	req: Request,
+	res: Response,
+): Promise<void> => {
+	try {
+		const {
+			search,
+			category,
+			sort,
+			minPrice,
+			maxPrice,
+			page = "1",
+			limit = "20",
+		} = req.query;
 
 		const pageNum = parseInt(page as string, 10) || 1;
 		const limitNum = parseInt(limit as string, 10) || 10;
@@ -40,15 +51,15 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 				if (!isNaN(max)) whereClause.price.lte = max;
 			}
 
-      // If neither parsed to a valid number, drop the empty filter object
-      if (Object.keys(whereClause.price).length === 0) {
-        delete whereClause.price;
-      }
-    }
+			// If neither parsed to a valid number, drop the empty filter object
+			if (Object.keys(whereClause.price).length === 0) {
+				delete whereClause.price;
+			}
+		}
 
-    let orderByClause: any = { createdAt: "desc" };
-    if (sort === "price_asc") orderByClause = { price: "asc" };
-    if (sort === "price_desc") orderByClause = { price: "desc" };
+		let orderByClause: any = { createdAt: "desc" };
+		if (sort === "price_asc") orderByClause = { price: "asc" };
+		if (sort === "price_desc") orderByClause = { price: "desc" };
 
 		const [products, totalItems] = await Promise.all([
 			prisma.product.findMany({
@@ -79,19 +90,22 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 	}
 };
 
-export const getProductById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({
-        success: false,
-        message: "Product ID is required.",
-      });
-      return;
-    }
-    const product = await prisma.product.findUnique({
-     where: { id: id as string },
-    });
+export const getProductById = async (
+	req: Request,
+	res: Response,
+): Promise<void> => {
+	try {
+		const { id } = req.params;
+		if (!id) {
+			res.status(400).json({
+				success: false,
+				message: "Product ID is required.",
+			});
+			return;
+		}
+		const product = await prisma.product.findUnique({
+			where: { id: id as string },
+		});
 
 		if (!product) {
 			res.status(404).json({
