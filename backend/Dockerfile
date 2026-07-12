@@ -7,13 +7,22 @@ COPY package*.json ./
 RUN npm i
 COPY . .
 
-# Generate Prisma Files
-RUN npx prisma generate
+# # Add DATABASE_URL for prisma to be happy :D <- Prisma Now (Hopefully)
+# ARG DATABASE_URL="postgresql://dev:dev@localhost:5432/bricked_lemons_db"
+# ENV DATABASE_URL=$DATABASE_URL
 
-# Load Schema to DB
-RUN npx prisma migrate dev --name init
+# # Generate Prisma Files
+# RUN npx prisma generate
 
-# Load Seed to DB
-RUN npx prisma db seed 
+# # Load Schema to DB
+# RUN npx prisma migrate dev --name init
 
-CMD ["npm", "run", "dev"]
+# # Load Seed to DB
+# RUN npx prisma db seed 
+
+# CMD ["npm", "run", "dev"]
+
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]

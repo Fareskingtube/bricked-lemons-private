@@ -20,12 +20,12 @@ function Navbar() {
 
 	const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
-			const search = e.currentTarget.value
+			const search = e.currentTarget.value;
 			if (!search) {
-				navigate("/products")
-				return
+				navigate("/products");
+				return;
 			}
-			navigate(`/products/search/${search}`)
+			navigate(`/products/search/${search}`);
 		}
 	};
 
@@ -78,7 +78,7 @@ function Navbar() {
 							</span>
 						</button>
 					</Dropdown>
-					<Link to="/cart" className="rounded-4xl text-text-900">
+					<Link to="/cart" className="rounded-4xl text-text-900 mr-2 ">
 						<BiCart className="text-3xl" />
 					</Link>
 				</div>

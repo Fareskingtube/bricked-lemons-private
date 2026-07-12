@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import { Toaster } from "react-hot-toast";
 import api from "./config/axios";
 import Products from "./pages/Products";
+import Cart from "./pages/Cart";
 
 export interface User {
 	id: string;
@@ -22,6 +23,7 @@ interface UserContextType {
 export const UserContext = createContext<UserContextType | null>(null);
 
 function App() {
+	
 	// Creating user state to put in the UserContext
 	const [user, setUser] = useState<User | null>(null);
 	// Fetching current user info setting it to user state (Uses the JWT from HTTP only cookie to get current user)
@@ -56,6 +58,7 @@ function App() {
 					<Route path="/register" element={<Register />} />
 					<Route path="/products" element={<Products />} />
 					<Route path="/products/search/:search" element={<Products />} />
+					<Route path="/cart" element={<Cart />} />
 				</Routes>
 			</BrowserRouter>
 		</UserContext.Provider>
