@@ -110,5 +110,10 @@ export const logout = async (req: Request, res: Response) => {
 
 export const getProfile = async (req: Request, res: Response) => {
 	// Return user info from protect middleware
-	res.json(req.user);
+	res.status(200).json(req.user);
+};
+
+
+export const getCompanySecret = async (req: Request, res: Response) => {
+	res.status(200).json({ message: "This is top secret" });
 };
