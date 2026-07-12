@@ -29,7 +29,7 @@ function Register() {
 			if (res.status === 201) {
 				setForum({ username: "", email: "", password: "" });
 				console.log(res.data);
-				
+
 				userContext?.setUser({
 					id: res.data?.user?.id,
 					username: res.data?.user?.username,
@@ -41,7 +41,24 @@ function Register() {
 			}
 		} catch (error) {
 			if (error instanceof AxiosError) {
-				toast.error(error.response?.data?.message);
+				if (error.response) {
+					// The server responded with a status code outside the 2xx range
+					console.error("Server Error Data:", error.response.data);
+					console.error("Status Code:", error.response.status);
+
+					// Target your API's custom message layout (e.g., { message: "..." })
+					const apiMessage =
+						error.response.data?.message || "Server error occurred";
+					toast.error(`Error: ${apiMessage}`);
+				} else if (error.request) {
+					// The request was made but no response was received (e.g., network down)
+					console.error("No Response Received:", error.request);
+					toast.error("Network error: Couldn't Connect to servers.");
+				} else {
+					// Something happened setting up the request
+					console.error("Request Setup Error:", error.message);
+					toast.error(`Config Error: ${error.message}`);
+				}
 			} else {
 				toast.error("An unexpected error has occurred");
 			}
