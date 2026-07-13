@@ -87,26 +87,33 @@ describe("Products Controller - Unit Tests", () => {
 		});
 	});
 
-	// it("should accurately forward query search filters and custom limits", async () => {
-	//   req.query = { search: "Lemon", category: "Fruit", page: "2", limit: "5", orderBy: "price", orderDirection: "asc" };
+	it("should accurately forward query search filters and custom limits", async () => {
+		req.query = {
+			search: "Lemon",
+			category: "Fruit",
+			page: "2",
+			limit: "5",
+			orderBy: "price",
+			orderDirection: "asc",
+		};
 
-	//   mockFindMany.mockResolvedValue([]);
-	//   mockCount.mockResolvedValue(0);
+		mockFindMany.mockResolvedValue([]);
+		mockCount.mockResolvedValue(0);
 
-	//   await getProducts(req as Request, res as Response);
+		await getProducts(req as Request, res as Response);
 
-	//   expect(mockFindMany).toHaveBeenCalledWith({
-	//     where: {
-	//       name: { contains: "Lemon", mode: "insensitive" },
-	//       category: "Fruit",
-	//     },
-	//     orderBy: { price: "asc" },
-	//     skip: 5,
-	//     take: 5,
-	//   });
+		expect(mockFindMany).toHaveBeenCalledWith({
+			where: {
+				name: { contains: "Lemon", mode: "insensitive" },
+				category: "Fruit",
+			},
+			orderBy: { price: "asc" },
+			skip: 5,
+			take: 5,
+		});
 
-	//   expect(statusMock).toHaveBeenCalledWith(200);
-	// });
+		expect(statusMock).toHaveBeenCalledWith(200);
+	});
 
 	it("should apply ascending price sorting via orderBy/orderDirection", async () => {
 		req.query = { orderBy: "price", orderDirection: "asc" };
