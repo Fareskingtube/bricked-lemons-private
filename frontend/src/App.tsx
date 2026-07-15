@@ -39,13 +39,13 @@ function App() {
 				console.log(fetchedUser);
 				
 				setUser(fetchedUser);
-			} catch (error) {
+			} catch (error: unknown) {
 				setUser(null);
 			}
 		};
 		if (!user) return
 		fetchUser();
-	}, []);
+	}, [user]);
 
 	return (
 		<UserContext.Provider value={{user, setUser}}>
