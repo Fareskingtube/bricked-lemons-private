@@ -3,11 +3,13 @@ import { BiChevronLeft } from "react-icons/bi";
 import { BiLastPage } from "react-icons/bi";
 import { BiFirstPage } from "react-icons/bi";
 import { Select } from "../components/Select";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import ProductList from "../components/ProductList";
 import api from "../config/axios";
 import { Link, useParams } from "react-router-dom";
 import getPageSelectorList from "../util/pageSelectorHelper";
+import { AxiosError } from "axios";
+import toast from "react-hot-toast";
 
 export interface Product {
 	id: string;
@@ -34,19 +36,53 @@ function Products() {
 
 	const { search } = useParams();
 
-	
 	useEffect(() => {
-		const fetchProducts = async () => {
-			setLoading(true);
-			const res = await api.get(
-				`/products/?limit=${limit || 20}&page=${currentPage}&category=${category}&minPrice=${minPrice}&maxPrice=${maxPrice}&orderBy=${sortBy}&orderDirection=${sortDir || "asc"}&search=${search || ""}`,
-			);
-			setProducts(res.data?.data);
-			setTotalPages(res.data?.pagination?.totalPages);
-			setLoading(false);
-		};
-		fetchProducts();
-	}, [currentPage, limit, category, minPrice, maxPrice, sortBy, sortDir, search]);
+		try {
+			const fetchProducts = async () => {
+				setLoading(true);
+				const res = await api.get(
+					`/products/?limit=${limit || 20}&page=${currentPage}&category=${category}&minPrice=${minPrice}&maxPrice=${maxPrice}&orderBy=${sortBy}&orderDirection=${sortDir || "asc"}&search=${search || ""}`,
+				);
+				setProducts(res.data?.data);
+				setTotalPages(res.data?.pagination?.totalPages);
+				setLoading(false);
+			};
+			fetchProducts();
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				if (error.response) {
+					// The server responded with a status code outside the 2xx range
+					console.error("Server Error Data:", error.response.data);
+					console.error("Status Code:", error.response.status);
+
+					// Target your API's custom message layout (e.g., { message: "..." })
+					const apiMessage =
+						error.response.data?.message || "Server error occurred";
+					toast.error(`Error: ${apiMessage}`);
+				} else if (error.request) {
+					// The request was made but no response was received (e.g., network down)
+					console.error("No Response Received:", error.request);
+					toast.error("Network error: Couldn't Connect to servers.");
+				} else {
+					// Something happened setting up the request
+					console.error("Request Setup Error:", error.message);
+					toast.error(`Config Error: ${error.message}`);
+				}
+			} else {
+				toast.error("An unexpected error has occurred");
+			}
+			console.error(error);
+		}
+	}, [
+		currentPage,
+		limit,
+		category,
+		minPrice,
+		maxPrice,
+		sortBy,
+		sortDir,
+		search,
+	]);
 
 	const pageSelectorList = getPageSelectorList(totalPages, currentPage);
 
@@ -81,37 +117,48 @@ function Products() {
 				<div className="flex gap-5">
 					<Select
 						name="Category"
-						options={["GPU", "CPU", "RAM", "Storage", "Monitor", "Peripherals"]}
+						options={
+							[
+								"GPU",
+								"CPU",
+								"RAM",
+								"Storage",
+								"Monitor",
+								"Peripherals",
+							] as string[]
+						}
 						setValue={setCategory}
 					/>
 					<Select
 						name="Limit"
-						options={[5, 10, 20, 30, 50, 100]}
+						options={[5, 10, 20, 30, 50, 100] as number[]}
 						setValue={setLimit}
 					/>
 					<Select
 						name="Min Price"
-						options={[10, 100, 200, 300, 400, 500, 800, 1000, 1200]}
-						values={[9, 99, 199, 299, 399, 499, 799, 999, 1199]}
-						setValue={setMinPrice}
+						options={[10, 100, 200, 300, 400, 500, 800, 1000, 1200] as number[]}
+						values={[9, 99, 199, 299, 399, 499, 799, 999, 1199] as number[]}
+						setValue={setMinPrice as Dispatch<SetStateAction<number>>}
 					/>
 					<Select
 						name="Max Price"
-						options={[30, 100, 200, 300, 400, 500, 800, 1000, 1200, 1600]}
-						setValue={setMaxPrice}
+						options={
+							[30, 100, 200, 300, 400, 500, 800, 1000, 1200, 1600] as number[]
+						}
+						setValue={setMaxPrice as Dispatch<SetStateAction<number>>}
 					/>
 				</div>
 				<div className="flex gap-5">
 					<Select
 						name="Sort Direction"
-						options={["Ascending", "Descending"]}
+						options={["Ascending", "Descending"] as string[]}
 						values={["asc", "desc"]}
 						setValue={setSortDir}
 					/>
 					<Select
 						name="Sort By"
-						options={["Recent", "Price", "Rating", "Name"]}
-						values={["createdAt", "price", "reviewRating", "name"]}
+						options={["Recent", "Price", "Rating", "Name"] as string[]}
+						values={["createdAt", "price", "reviewRating", "name"] as string[]}
 						setValue={setSortBy}
 					/>
 				</div>

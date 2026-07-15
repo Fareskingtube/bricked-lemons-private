@@ -41,6 +41,7 @@ function App() {
 				setUser(fetchedUser);
 			} catch (error: unknown) {
 				setUser(null);
+				console.error(error);
 			}
 		};
 		if (!user) return

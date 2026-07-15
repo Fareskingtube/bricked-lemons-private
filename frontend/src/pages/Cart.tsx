@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Product } from "./Products";
 import { ProductCard } from "../components/ProductCard";
 import { Link } from "react-router-dom";
 
 function Cart() {
-	const [cart, setCart] = useState<Product[]>([]);
-
-	useEffect(() => {
+	const [cart, setCart] = useState<Product[]>(() => {
+	try {
 		const storedCart = localStorage.getItem("cart");
+		return storedCart ? JSON.parse(storedCart) : [];
+	} catch {
+		return [];
+	}
+});
 
-		const savedCart: Product[] = storedCart ? JSON.parse(storedCart) : [];
-		setCart(savedCart);
-	}, []);
 
 	return (
 		<div className="w-screen h-screen mt-10">

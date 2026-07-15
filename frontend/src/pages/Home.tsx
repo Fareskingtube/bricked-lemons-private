@@ -1,9 +1,7 @@
-import { useNavigate } from "react-router-dom";
 import CategoryCard from "../components/CategoryCard";
 import Hero from "../components/Hero";
 
 function Home() {
-	const navigate = useNavigate();
 	return (
 		<>
 			<Hero />

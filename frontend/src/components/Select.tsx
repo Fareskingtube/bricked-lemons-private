@@ -1,20 +1,20 @@
 import type { Dispatch } from "react";
 
-interface SelectProps {
+interface SelectProps<T extends string | number> {
 	name: string;
-	options: string[] | number[];
-	setValue: Dispatch<React.SetStateAction<any>>;
-	default?: string | number;
-	values?: string[] | number[];
+	options: T[];
+	setValue: Dispatch<React.SetStateAction<T>>;
+	default?: T;
+	values?: T[];
 }
 
-export function Select({
+export function Select<T extends string | number>({
 	name,
 	options,
 	setValue,
 	default: defaultValue,
 	values,
-}: SelectProps) {
+}: SelectProps<T>) {
 	const activeValues = values ?? options;
 	if (activeValues?.length !== options.length)
 		console.warn(
@@ -28,7 +28,7 @@ export function Select({
                     [&::picker-icon]:transition-transform [&:open::picker-icon]:rotate-180
                     dark:bg-accent-900 bg-accent-300 p-1.5 rounded-2xl font-medium px-2.5"
 			onChange={(e) => {
-				setValue(e.target.value);
+				setValue(e.target.value as T);
 			}}
 			defaultValue={defaultValue ? defaultValue : ""}
 		>
