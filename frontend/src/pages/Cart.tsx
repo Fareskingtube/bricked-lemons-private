@@ -3,27 +3,41 @@ import type { Product } from "./Products";
 import { ProductCard } from "../components/ProductCard";
 import { Link } from "react-router-dom";
 
-function Cart() {
-	const [cart, setCart] = useState<Product[]>(() => {
-	try {
-		const storedCart = localStorage.getItem("cart");
-		return storedCart ? JSON.parse(storedCart) : [];
-	} catch {
-		return [];
-	}
-});
+export interface CartItem {
+	product: Product;
+	quantity: number;
+}
 
+function Cart() {
+	const [cart, setCart] = useState<CartItem[]>(() => {
+		try {
+			const storedCart = localStorage.getItem("cart");
+			return storedCart ? JSON.parse(storedCart) : [];
+		} catch {
+			return [];
+		}
+	});
 
 	return (
 		<div className="w-screen h-screen mt-10">
-			<div className="p-5 mx-10 bg-background-300 dark:bg-background-50 dark:border-2 dark:border-background-100 min-h-[80vh] flex flex-col gap-2 
-            justify-between items-center rounded-2xl">
-				<h1>Cart ({cart.length} Items)</h1>
+			<div
+				className="p-5 mx-10 bg-background-300 dark:bg-background-50 dark:border-2 dark:border-background-100 min-h-[80vh] flex flex-col gap-2 
+            justify-between items-center rounded-2xl"
+			>
+				<h1>
+					Cart (
+					{cart.reduce(
+						(accumulator, currentItem) => accumulator + currentItem.quantity,
+						0,
+					)}{" "}
+					Items)
+				</h1>
 				<div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] w-full gap-4 items-center justify-center">
-					{cart.map((product) => (
+					{cart.map((cartItem) => (
 						<ProductCard
-							product={product}
-							addCartButton={false}
+							key={cartItem.product.id}
+							product={cartItem.product}
+							quantity={cartItem.quantity}
 							setCart={setCart}
 						/>
 					))}
@@ -34,18 +48,17 @@ function Cart() {
 						<h1 className="text-primary-500">
 							$
 							{cart.reduce(
-								(accumulator, currentItem) => accumulator + currentItem.price,
+								(accumulator, currentItem) =>
+									accumulator + currentItem.product.price * currentItem.quantity,
 								0,
 							)}
 						</h1>
 					</div>
 					<Link
-                        to={"/checkout"}
+						to={"/checkout"}
 						className="w-fit p-3 rounded-2xl mt-4 mb-1 bg-primary-500 hover:bg-primary-600 transition-colors duration-100 "
 					>
-						<span
-							className="font-bold dark:text-accent-100 text-accent-900"
-						>
+						<span className="font-bold dark:text-accent-100 text-accent-900">
 							Buy Now
 						</span>
 					</Link>

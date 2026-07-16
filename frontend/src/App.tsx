@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import api from "./config/axios";
 import Products from "./pages/Products";
 import Cart from "./pages/Cart";
+import ProductItem from "./pages/ProductItem";
 
 export interface User {
 	id: string;
@@ -58,6 +59,7 @@ function App() {
 					<Route path="/login" element={<Login />} />
 					<Route path="/register" element={<Register />} />
 					<Route path="/products" element={<Products />} />
+					<Route path="/products/:id" element={<ProductItem />} />
 					<Route path="/products/search/:search" element={<Products />} />
 					<Route path="/cart" element={<Cart />} />
 				</Routes>

@@ -18,7 +18,7 @@ export function Select<T extends string | number>({
 	const activeValues = values ?? options;
 	if (activeValues?.length !== options.length)
 		console.warn(
-			`Provided Values and Options for: ${name} filter aren't equal`,
+			`Provided Values and Options for: ${name} filter aren't aren't the same number`,
 		);
 
 	return (
