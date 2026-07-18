@@ -9,7 +9,7 @@ import {
 import request from "supertest";
 import express from "express";
 import productsRouter from "../routes/productsRouter.js";
-import { prisma } from "../config/dbs.ts";
+import { prismaPg } from "../config/dbs.ts";
 
 // Setup an isolated instance of express for testing the router
 const app = express();
@@ -19,11 +19,11 @@ app.use("/api/products", productsRouter);
 describe("Products API - Integration Tests", () => {
 	// Wipe the database table clean before and after every single test run
 	beforeEach(async () => {
-		await prisma.product.deleteMany();
+		await prismaPg.product.deleteMany();
 	});
 
 	afterEach(async () => {
-		await prisma.product.deleteMany();
+		await prismaPg.product.deleteMany();
 	});
 
 	it("GET /api/products - should return empty pagination data when no items exist", async () => {
@@ -41,13 +41,13 @@ describe("Products API - Integration Tests", () => {
 			data: [],
 		});
 		afterAll(async () => {
-			await prisma.$disconnect();
+			await prismaPg.$disconnect();
 		});
 	});
 
 	it("GET /api/products - should apply search, category, and sorting filters against real data", async () => {
 		// Seed test data directly into the test database
-		await prisma.product.createMany({
+		await prismaPg.product.createMany({
 			data: [
 				{
 					name: "Sour Bricked Lemon",

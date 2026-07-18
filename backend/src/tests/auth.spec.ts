@@ -1,3 +1,4 @@
+
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 import type { Request, Response } from "express";
 
@@ -20,6 +21,10 @@ const mockBcryptCompare = jest.fn() as unknown as jest.MockedFunction<
 const mockJwtSign = jest.fn() as unknown as jest.MockedFunction<
 	(...args: any[]) => any
 >;
+const mockSendMail = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+
 
 jest.unstable_mockModule("../config/dbs.js", () => ({
 	__esModule: true,
@@ -43,6 +48,13 @@ jest.unstable_mockModule("jsonwebtoken", () => ({
 	__esModule: true,
 	default: {
 		sign: mockJwtSign,
+	},
+}));
+
+jest.unstable_mockModule("../config/nodemailer.js", () => ({
+	__esModule: true,
+	transport: {
+		sendMail: mockSendMail,
 	},
 }));
 
