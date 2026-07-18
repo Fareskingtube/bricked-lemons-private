@@ -17,9 +17,9 @@ const mockCreate = jest.fn() as unknown as jest.MockedFunction<
 const mockUpdate = jest.fn() as unknown as jest.MockedFunction<
 	(...args: any[]) => Promise<any>
 >;
-jest.unstable_mockModule("../config/db.js", () => ({
+jest.unstable_mockModule("../config/dbs.js", () => ({
 	__esModule: true,
-	prisma: {
+	prismaPg: {
 		product: {
 			findMany: mockFindMany,
 			count: mockCount,

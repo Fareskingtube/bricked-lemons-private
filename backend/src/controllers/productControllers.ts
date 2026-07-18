@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { prisma } from "../config/db.js";
+import { prismaPg } from "../config/dbs.ts";
 // function with pagination, filtering, and search queries n stuff
 export const getProducts = async (
 	req: Request,
@@ -71,13 +71,13 @@ export const getProducts = async (
 		const orderByClause: any = { [orderField]: orderDir };
 
 		const [products, totalItems] = await Promise.all([
-			prisma.product.findMany({
+			prismaPg.product.findMany({
 				where: whereClause,
 				orderBy: orderByClause,
 				skip,
 				take: limitNum,
 			}),
-			prisma.product.count({ where: whereClause }),
+			prismaPg.product.count({ where: whereClause }),
 		]);
 
 		res.status(200).json({
@@ -112,7 +112,7 @@ export const getProductById = async (
 			});
 			return;
 		}
-		const product = await prisma.product.findUnique({
+		const product = await prismaPg.product.findUnique({
 			where: { id: id as string },
 		});
 
@@ -151,7 +151,7 @@ export const createProduct = async (
 			});
 			return;
 		}
-		const product = await prisma.product.create({
+		const product = await prismaPg.product.create({
 			data: {
 				name: name as string,
 				price: parseFloat(price as string),
@@ -226,7 +226,7 @@ export const updateProductRating = async (
 			data.reviewCount = parsedCount;
 		}
 
-		const existing = await prisma.product.findUnique({
+		const existing = await prismaPg.product.findUnique({
 			where: { id: id as string },
 		});
 		if (!existing) {
@@ -237,7 +237,7 @@ export const updateProductRating = async (
 			return;
 		}
 
-		const product = await prisma.product.update({
+		const product = await prismaPg.product.update({
 			where: { id: id as string },
 			data,
 		});
@@ -306,7 +306,7 @@ export const updateProduct = async (
 			data.price = parsedPrice;
 		}
 
-		const existing = await prisma.product.findUnique({
+		const existing = await prismaPg.product.findUnique({
 			where: { id: id as string },
 		});
 		if (!existing) {
@@ -317,7 +317,7 @@ export const updateProduct = async (
 			return;
 		}
 
-		const product = await prisma.product.update({
+		const product = await prismaPg.product.update({
 			where: { id: id as string },
 			data,
 		});

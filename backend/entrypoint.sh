@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-echo "Waiting for database..."
-npx prisma generate
-npx prisma migrate dev --name init
-npx prisma db seed
+echo "Waiting for databases..."
+npm run generate
+npm run migrate
+npm run seed:pg
 
 exec npm run dev

@@ -9,7 +9,7 @@ import {
 import request from "supertest";
 import express from "express";
 import productsRouter from "../routes/productsRouter.js";
-import { prisma } from "../config/db.js";
+import { prisma } from "../config/dbs.ts";
 
 // Setup an isolated instance of express for testing the router
 const app = express();

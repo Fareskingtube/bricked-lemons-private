@@ -1,7 +1,7 @@
 import jwt, { type JwtPayload, type Secret } from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
-import { prisma } from "../config/db.js";
-import type { User } from "../generated/prisma/index.js";
+import { prismaPg } from "../config/dbs.ts";
+import type { User } from "../generated/prisma-postgres/index.js";
 
 // Interface
 interface AuthTokenPayload extends JwtPayload {
@@ -39,7 +39,7 @@ export const protect = async (
 		// Verifying JWT integrity
 		const decoded = jwt.verify(token, secret) as AuthTokenPayload;
 
-		const user = await prisma.user.findUnique({
+		const user = await prismaPg.user.findUnique({
 			where: { id: decoded.id },
 		});
 

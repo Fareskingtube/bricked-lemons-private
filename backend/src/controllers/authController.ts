@@ -1,6 +1,6 @@
 import type { Request, Response, CookieOptions } from "express";
 import jwt, { type Secret } from "jsonwebtoken";
-import { prisma } from "../config/db.js";
+import { prismaPg } from "../config/dbs.ts";
 import bcrypt from "bcrypt";
 
 // I use HTTP only cookies I AM SUPERIOR
@@ -32,7 +32,7 @@ export const register = async (req: Request, res: Response) => {
 				.json({ message: "Please provide all required fields" });
 
 		// I don't need email : email I AM SUPERIOR
-		const userExists = await prisma.user.findUnique({
+		const userExists = await prismaPg.user.findUnique({
 			where: { email },
 		});
 
@@ -43,7 +43,7 @@ export const register = async (req: Request, res: Response) => {
 		// Hashing password to store safely on database
 		const hashedPassword = await bcrypt.hash(password, 12);
 
-		const newUser = await prisma.user.create({
+		const newUser = await prismaPg.user.create({
 			data: { username, email, password: hashedPassword },
 		});
 
@@ -73,7 +73,7 @@ export const login = async (req: Request, res: Response) => {
 				.status(400)
 				.json({ message: "Please provide all required fields" });
 
-		const user = await prisma.user.findUnique({
+		const user = await prismaPg.user.findUnique({
 			where: { email },
 		});
 
@@ -112,7 +112,6 @@ export const getProfile = async (req: Request, res: Response) => {
 	// Return user info from protect middleware
 	res.status(200).json(req.user);
 };
-
 
 export const getCompanySecret = async (req: Request, res: Response) => {
 	res.status(200).json({ message: "This is top secret" });

@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import ProductRouter from "./routes/productsRouter.js";
 import AuthRouter from "./routes/authRouter.js";
-import { connectDB, disconnectDB } from "./config/db.js";
+import { connectDBs, disconnectDBs } from "./config/dbs.ts";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -13,12 +13,14 @@ dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
 
-const CORS_ORIGIN = process.env.FRONTEND_URL || "http://localhost:5173/"
+const CORS_ORIGIN = process.env.FRONTEND_URL || "http://localhost:5173/";
 
-app.use(cors({
-	origin: CORS_ORIGIN,
-	credentials: true
-}))
+app.use(
+	cors({
+		origin: CORS_ORIGIN,
+		credentials: true,
+	}),
+);
 
 const PORT = process.env.PORT || 5000;
 
@@ -27,7 +29,7 @@ app.use("/api/auth", AuthRouter);
 
 let server: ReturnType<typeof app.listen>;
 
-connectDB().then(() => {
+connectDBs().then(() => {
 	server = app.listen(PORT, () => {
 		console.log(`Server is running at: http:localhost:${PORT}`);
 	});
@@ -38,7 +40,7 @@ connectDB().then(() => {
 process.on("unhandledRejection", (err) => {
 	console.error("Unhandled Rejection:", err);
 	server.close(async () => {
-		await disconnectDB();
+		await disconnectDBs();
 		process.exit(1);
 	});
 });
@@ -46,7 +48,7 @@ process.on("unhandledRejection", (err) => {
 // Handle uncaught exceptions
 process.on("uncaughtException", async (err) => {
 	console.error("Uncaught Exception:", err);
-	await disconnectDB();
+	await disconnectDBs();
 	process.exit(1);
 });
 
@@ -54,7 +56,7 @@ process.on("uncaughtException", async (err) => {
 process.on("SIGTERM", async () => {
 	console.log("SIGTERM received, shutting down gracefully");
 	server.close(async () => {
-		await disconnectDB();
+		await disconnectDBs();
 		process.exit(0);
 	});
 });

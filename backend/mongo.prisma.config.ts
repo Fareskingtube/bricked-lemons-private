@@ -4,12 +4,12 @@ import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
-	schema: "./prisma/schema.prisma",
+	schema: "./prisma/mongo/schema.prisma",
 	migrations: {
-		path: "prisma/migrations",
-		seed: "tsx prisma/seed.ts",
+		path: "prisma/mongo/migrations",
+		seed: "tsx prisma/mongo/seed.ts",
 	},
 	datasource: {
-		url: env("DATABASE_URL"),
+		url: env("MONGODB_DATABASE_URL"),
 	},
 });

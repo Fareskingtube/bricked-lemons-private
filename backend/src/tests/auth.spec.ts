@@ -21,9 +21,9 @@ const mockJwtSign = jest.fn() as unknown as jest.MockedFunction<
 	(...args: any[]) => any
 >;
 
-jest.unstable_mockModule("../config/db.js", () => ({
+jest.unstable_mockModule("../config/dbs.js", () => ({
 	__esModule: true,
-	prisma: {
+	prismaPg: {
 		user: {
 			findUnique: mockFindUnique,
 			create: mockCreate,

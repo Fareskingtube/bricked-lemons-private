@@ -1,14 +1,12 @@
-import { PrismaClient } from "../src/generated/prisma/index.js";
+import { PrismaClient } from "../../src/generated/prisma-postgres/index.js";
 import pg from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
 
 // 1. Set up the native pg connection pool using your environment variable
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
+const pool = new pg.Pool({ connectionString: process.env.PSQL_DATABASE_URL });
 
 // 2. Pass the adapter directly into the constructor to satisfy engineType = "client"
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
 	console.log("Starting database seeding with Driver Adapter...");
