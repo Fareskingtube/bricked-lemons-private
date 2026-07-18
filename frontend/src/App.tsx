@@ -37,7 +37,6 @@ function App() {
 					username: res.data?.username,
 					role: res.data?.role,
 				};
-				console.log(fetchedUser);
 				
 				setUser(fetchedUser);
 			} catch (error: unknown) {
@@ -45,7 +44,6 @@ function App() {
 				console.error(error);
 			}
 		};
-		if (!user) return
 		fetchUser();
 	}, [user]);
 

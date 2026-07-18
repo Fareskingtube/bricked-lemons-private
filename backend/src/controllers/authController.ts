@@ -2,6 +2,8 @@ import type { Request, Response, CookieOptions } from "express";
 import jwt, { type Secret } from "jsonwebtoken";
 import { prismaPg } from "../config/dbs.ts";
 import bcrypt from "bcrypt";
+import { transport } from "../config/nodemailer.ts";
+import { getWelcomeEmail } from "../util/emailTemplate.ts";
 
 // I use HTTP only cookies I AM SUPERIOR
 const cookieOptions: CookieOptions = {
@@ -50,6 +52,13 @@ export const register = async (req: Request, res: Response) => {
 		const token = generateToken(newUser.id, newUser.role);
 
 		res.cookie("token", token, cookieOptions);
+
+		// Sending Email
+		transport.sendMail({
+			to: newUser.email,
+			subject: "Account Creation Bricked Lemons",
+			html: getWelcomeEmail(newUser.username)
+		})
 
 		return res.status(201).json({
 			message: "User created",
