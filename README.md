@@ -69,13 +69,14 @@ cp ./frontend/.example.env ./frontend/.env
 Open the `.env` files in both `/frontend` and `/backend` directories and set the variables accordingly **(Especially the `DATABASE_URL` in `/backend/.env`)**
 
 Run:
+<!-- TODO: Add MongoDB seed and seed both DBs with npm run seed  -->
 ```sh
 # Start the backend server
 cd backend
 npm i
-npx prisma generate
-npx prisma migrate dev --name init
-npx prisma db seed
+npm run generate
+npm run migrate
+npm run seed:pg
 npm run build
 npm run start
 
@@ -85,4 +86,15 @@ npm i
 npm run build
 npm run start
 ```
+
 Now if you open up `http://localhost:5173/` You should see the home page and that everything is working
+
+## Endpoints
+
+### Frontend: 
+- `http://localhost:5173`
+### Backend: 
+- Express Server: `http://localhost:5000/api` (Port `5000` by default edit at `/backend/.env`)
+#### Docker:
+- PostgreSQL: `http://localhost:5433` (In docker container port is `5432`)
+- MongoDB: `http://localhost:27017`
