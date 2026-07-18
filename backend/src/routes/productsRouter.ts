@@ -6,6 +6,7 @@ import {
 	updateProduct,
 	updateProductRating,
 } from "../controllers/productControllers.js";
+import { upload } from "../middleware/upload.ts";
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.get("/", getProducts);
 
 router.get("/:id", getProductById);
 
-router.post("/create", createProduct);
+router.post("/", upload.array("image", 5), createProduct);
 
 router.patch("/:id", updateProduct);
 

@@ -35,7 +35,7 @@ model Product {
   name      String
   price     Float
   category  String
-  imageLink String
+  imageKeys String[]
 
   reviewRating Int      @default(0)
   reviewCount  Int      @default(0)

@@ -1,5 +1,40 @@
 import type { Request, Response } from "express";
 import { prismaPg } from "../config/dbs.ts";
+import { requireEnv } from "../config/env.ts";
+import {
+	GetObjectCommand,
+	PutObjectCommand,
+	S3Client,
+	type PutObjectCommandInput,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import path from "path";
+import { r2 } from "../config/r2.ts";
+import type { Product } from "../generated/prisma-postgres/index.js";
+
+interface ProductWithImageUrl extends Product {
+	imageUrls: (string | null)[];
+}
+
+// Takes Products and returns Product with image keys converted to URLs and added as imageUrl[]
+async function getProductWithImageUrl(
+	product: Product,
+): Promise<ProductWithImageUrl> {
+	const imageUrls = await Promise.all(
+		product.imageKeys
+			.filter((imageKey): imageKey is string => Boolean(imageKey))
+			.map(async (imageKey) => {
+				const command = new GetObjectCommand({
+					Bucket: requireEnv("BUCKET_NAME"),
+					Key: imageKey,
+				});
+				return getSignedUrl(r2, command, { expiresIn: 3600 }); // 1 hour
+			}),
+	);
+
+	return { ...product, imageUrls };
+}
+
 // function with pagination, filtering, and search queries n stuff
 export const getProducts = async (
 	req: Request,
@@ -80,6 +115,12 @@ export const getProducts = async (
 			prismaPg.product.count({ where: whereClause }),
 		]);
 
+		const productsWithImageUrls: ProductWithImageUrl[] = await Promise.all(
+			products.map(async (product) => {
+				return await getProductWithImageUrl(product);
+			}),
+		);
+
 		res.status(200).json({
 			success: true,
 			pagination: {
@@ -88,7 +129,7 @@ export const getProducts = async (
 				totalPages: Math.ceil(totalItems / limitNum),
 				limit: limitNum,
 			},
-			data: products,
+			data: productsWithImageUrls,
 		});
 	} catch (error) {
 		console.error("Error fetching products:", error);
@@ -142,23 +183,53 @@ export const createProduct = async (
 	res: Response,
 ): Promise<void> => {
 	try {
-		const { name, imageLink, price, category } = req.body;
+		const { name, price, category } = req.body;
 
-		if (!name || !imageLink || !price || !category) {
+		if (!name || !price || !category) {
 			res.status(400).json({
 				success: false,
 				message: "give me all the data, you dumbass.",
 			});
 			return;
 		}
+
+		const files = req.files as Express.Multer.File[];
+
+		if (!files || files.length === 0) {
+			res.status(400).json({
+				success: false,
+				message: "At least one image file is required.",
+			});
+			return;
+		}
+
+		const imageKeys = await Promise.all(
+			files.map(async (file) => {
+				const ext = path.extname(file.originalname).toLowerCase();
+				const key = `products/${crypto.randomUUID()}${ext}`;
+
+				await r2.send(
+					new PutObjectCommand({
+						Bucket: requireEnv("BUCKET_NAME"),
+						Key: key,
+						Body: file.buffer,
+						ContentType: file.mimetype,
+					}),
+				);
+
+				return key;
+			}),
+		);
+
 		const product = await prismaPg.product.create({
 			data: {
 				name: name as string,
 				price: parseFloat(price as string),
 				category: category as string,
-				imageLink: imageLink as string,
+				imageKeys,
 			},
 		});
+
 		res.status(201).json({
 			success: true,
 			data: product,
@@ -254,6 +325,7 @@ export const updateProductRating = async (
 		});
 	}
 };
+
 export const updateProduct = async (
 	req: Request,
 	res: Response,

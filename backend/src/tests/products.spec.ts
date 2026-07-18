@@ -17,6 +17,13 @@ const mockCreate = jest.fn() as unknown as jest.MockedFunction<
 const mockUpdate = jest.fn() as unknown as jest.MockedFunction<
 	(...args: any[]) => Promise<any>
 >;
+const mockR2Send = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockGetSignedUrl = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<string>
+>;
+
 jest.unstable_mockModule("../config/dbs.js", () => ({
 	__esModule: true,
 	prismaPg: {
@@ -28,6 +35,21 @@ jest.unstable_mockModule("../config/dbs.js", () => ({
 			update: mockUpdate,
 		},
 	},
+}));
+
+jest.unstable_mockModule("../config/r2.js", () => ({
+	__esModule: true,
+	r2: { send: mockR2Send },
+}));
+
+jest.unstable_mockModule("../config/env.js", () => ({
+	__esModule: true,
+	requireEnv: jest.fn((key: string) => `mock-${key}`),
+}));
+
+jest.unstable_mockModule("@aws-sdk/s3-request-presigner", () => ({
+	__esModule: true,
+	getSignedUrl: mockGetSignedUrl,
 }));
 
 const {
@@ -47,8 +69,22 @@ describe("Products Controller - Unit Tests", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 
-		req = { query: {} };
+		req = {
+			query: {},
+			body: {},
+			files: [
+				{
+					originalname: "keyboard.png",
+					buffer: Buffer.from("fake image data"),
+					mimetype: "image/png",
+				} as Express.Multer.File,
+			],
+		};
 		jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
+		mockGetSignedUrl.mockResolvedValue(
+			"https://mock-bucket.example.com/products/mock-key.jpg",
+		);
+		mockR2Send.mockResolvedValue({});
 		statusMock = jest
 			.fn()
 			.mockImplementation(() => ({ json: jsonMock }) as any);
@@ -65,6 +101,8 @@ describe("Products Controller - Unit Tests", () => {
 				name: "Lemon Keyboard",
 				price: 45.0,
 				category: "Electronics",
+				imageKeys: [expect.any(String)],
+				imageUrls: [expect.any(String)],
 				createdAt: new Date(),
 			},
 		];
@@ -73,7 +111,6 @@ describe("Products Controller - Unit Tests", () => {
 		mockCount.mockResolvedValue(1);
 
 		await getProducts(req as Request, res as Response);
-
 		expect(statusMock).toHaveBeenCalledWith(200);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: true,
@@ -332,7 +369,17 @@ describe("Products Controller - createProduct", () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { body: {} };
+		req = {
+			body: {},
+			files: [
+				{
+					originalname: "keyboard.png",
+					buffer: Buffer.from("fake image data"),
+					mimetype: "image/png",
+				} as Express.Multer.File,
+			],
+		};
+		mockR2Send.mockResolvedValue({});
 		jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
 		statusMock = jest
 			.fn()
@@ -367,7 +414,7 @@ describe("Products Controller - createProduct", () => {
 				name: "Lemon Keyboard",
 				price: 45.0,
 				category: "Electronics",
-				imageLink: "https://example.com/keyboard.png",
+				imageKeys: [expect.any(String)],
 			},
 		});
 		expect(statusMock).toHaveBeenCalledWith(201);
@@ -412,6 +459,19 @@ describe("Products Controller - createProduct", () => {
 			success: false,
 			message: "Server encountered an error while creating the product.",
 		});
+	});
+	it("should return 400 when no image files are provided", async () => {
+		req.body = {
+			name: "Lemon Keyboard",
+			price: "45.00",
+			category: "Electronics",
+		};
+		req.files = [];
+
+		await createProduct(req as Request, res as Response);
+
+		expect(mockCreate).not.toHaveBeenCalled();
+		expect(statusMock).toHaveBeenCalledWith(400);
 	});
 });
 
