@@ -1,15 +1,8 @@
 import nodemailer from "nodemailer"
+import { requireEnv } from "./env.ts"
 
-const email = process.env.NODE_MAILER_EMAIL
-const password = process.env.NODE_MAILER_PASSWORD
-
-// Exit if email/password are empty
-if (!email || !password) {
-    console.error(
-        "[mailer] Missing NODE_MAILER_EMAIL or NODE_MAILER_PASSWORD environment variable(s)."
-    )
-    process.exit(1)
-}
+const email = requireEnv("NODE_MAILER_EMAIL") 
+const password = requireEnv("NODE_MAILER_PASSWORD")
 
 // Creating nodemailer transport
 export const transport = nodemailer.createTransport({
