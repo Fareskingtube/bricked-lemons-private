@@ -33,6 +33,7 @@ dist
 # Generated
 generated
 migrations
+coverage
 
 # Wakatime
 .wakatime-project

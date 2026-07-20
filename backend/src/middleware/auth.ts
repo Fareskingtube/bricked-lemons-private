@@ -10,7 +10,7 @@ interface AuthTokenPayload extends JwtPayload {
 }
 
 // Creating user type without password for security
-type SafeUser = Omit<User, "password">;
+export type SafeUser = Omit<User, "password">;
 
 // Adding user to Request express interface
 declare global {

@@ -1,11 +1,14 @@
 import { admin, protect } from "../middleware/auth.js";
+import { upload } from "../middleware/upload.ts";
 import {
 	register,
 	login,
 	getProfile,
 	logout,
-	getCompanySecret,
-} from "./../controllers/authController.js";
+	updateUser,
+	updatePassword,
+	changUserRole,
+} from "../controllers/authControllers.ts";
 import express from "express";
 
 const router = express.Router();
@@ -17,6 +20,10 @@ router.post("/logout", logout);
 
 router.get("/me", protect, getProfile);
 
-router.get("/admin", protect, admin, getCompanySecret);
+router.put("/me", protect, upload.single("image"), updateUser);
+
+router.put("/me/password", protect, updatePassword);
+
+router.put("/admin/changeUserRole", protect, admin, changUserRole);
 
 export default router;
