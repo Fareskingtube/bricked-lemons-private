@@ -78,7 +78,7 @@ export function ProductCard({ product, quantity, setCart }: ProductCardProps) {
 		>
 			<h3 className="truncate">{product.name}</h3>
 			<img
-				src={product.imageLink}
+				src={product.imageUrls[0]}
 				alt={product.name}
 				className="w-65 h-45 object-cover object-center border-6 border-accent-500 rounded-2xl mb-4"
 			/>

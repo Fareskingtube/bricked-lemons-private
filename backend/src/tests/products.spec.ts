@@ -142,7 +142,9 @@ describe("Products Controller - Unit Tests", () => {
 		expect(mockFindMany).toHaveBeenCalledWith({
 			where: {
 				name: { contains: "Lemon", mode: "insensitive" },
-				category: "Fruit",
+				category: {
+					slug: "Fruit",
+				},
 			},
 			orderBy: { price: "asc" },
 			skip: 5,

@@ -16,7 +16,9 @@ export interface Product {
 	name: string;
 	price: number;
 	category: string;
-	imageLink: string;
+	imageKeys: string[];
+	imageUrls: string[];
+	description: string;
 	reviewRating: number;
 	reviewCount: number;
 	createdAt: string;
@@ -127,6 +129,7 @@ function Products() {
 								"Peripherals",
 							] as string[]
 						}
+						values={["gpu", "cpu", "monitor", "peripherals", "networking", "audio"]}
 						setValue={setCategory}
 					/>
 					<Select

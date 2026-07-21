@@ -11,6 +11,7 @@ import { requireEnv } from "../config/env.ts";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { SafeUser } from "../middleware/auth.ts";
 import { PrismaClientKnownRequestError } from "../generated/prisma-postgres/runtime/library.js";
+import type { Prisma } from "../generated/prisma-postgres/index.js";
 
 interface UserWithImageUrl extends SafeUser {
 	imageUrl: string | null;
@@ -202,11 +203,7 @@ export const updateUser = async (req: Request, res: Response) => {
 		}
 
 		// Creating object with data to update
-		const updateData: {
-			username: string;
-			email: string;
-			imageKey?: string;
-		} = { username, email };
+		const updateData: Prisma.UserUpdateInput = { username, email };
 
 		if (imageKey) {
 			updateData.imageKey = imageKey;
@@ -273,7 +270,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 		const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
 		// Updating user's password
-		const updatedUser = await prismaPg.user.update({
+		await prismaPg.user.update({
 			where: { id: user.id },
 			data: { password: hashedNewPassword },
 			select: {

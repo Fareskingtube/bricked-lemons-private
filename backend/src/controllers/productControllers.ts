@@ -1,16 +1,13 @@
 import type { Request, Response } from "express";
-import { prismaPg } from "../config/dbs.ts";
+import { prismaMongo, prismaPg } from "../config/dbs.ts";
 import { requireEnv } from "../config/env.ts";
-import {
-	GetObjectCommand,
-	PutObjectCommand,
-	S3Client,
-	type PutObjectCommandInput,
-} from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import path from "path";
 import { r2 } from "../config/r2.ts";
-import type { Product } from "../generated/prisma-postgres/index.js";
+import type { Prisma, Product } from "../generated/prisma-postgres/index.js";
+import { PrismaClientKnownRequestError } from "../generated/prisma-mongo/runtime/library.js";
+import { protect } from "../middleware/auth.ts";
 
 interface ProductWithImageUrl extends Product {
 	imageUrls: (string | null)[];
@@ -71,7 +68,9 @@ export const getProducts = async (
 		}
 
 		if (category) {
-			whereClause.category = category as string;
+			whereClause.category = {
+				slug: category as string,
+			};
 		}
 
 		if (minPrice !== undefined || maxPrice !== undefined) {
@@ -183,12 +182,12 @@ export const createProduct = async (
 	res: Response,
 ): Promise<void> => {
 	try {
-		const { name, price, category } = req.body;
+		const { name, price, category, description } = req.body;
 
-		if (!name || !price || !category) {
+		if (!name || !price || !category || !description) {
 			res.status(400).json({
 				success: false,
-				message: "give me all the data, you dumbass.",
+				message: "Not all fields are filled",
 			});
 			return;
 		}
@@ -223,9 +222,10 @@ export const createProduct = async (
 
 		const product = await prismaPg.product.create({
 			data: {
-				name: name as string,
+				name: name,
 				price: parseFloat(price as string),
-				category: category as string,
+				category: { connect: { slug: category as string } },
+				description: description as string,
 				imageKeys,
 			},
 		});
@@ -243,86 +243,128 @@ export const createProduct = async (
 	}
 };
 
-export const updateProductRating = async (
-	req: Request,
-	res: Response,
-): Promise<void> => {
+// Recalculates the product reviews
+const calculateReviewCount = async (productId: string) => {
+	const agg = await prismaMongo.review.aggregate({
+		where: { productId },
+		_avg: { rating: true },
+		_count: { _all: true },
+	});
+
+	const reviewCount = agg._count._all;
+	const reviewRating = reviewCount > 0 ? Math.round(agg._avg.rating ?? 0) : 0;
+
+	await prismaPg.product.update({
+		where: { id: productId },
+		data: { reviewRating, reviewCount },
+	});
+};
+
+// Creates a review
+export const createReview = async (req: Request, res: Response) => {
+	const user = req.user;
+	const { id: productId } = req.params;
+	const { comment, rating: reqRating } = req.body;
+
+	const userId = user?.id;
+
+	if (!userId) {
+		return res.status(401).json({ message: "Invalid User ID please login" });
+	}
+
+	if (!productId || !comment || reqRating === undefined) {
+		return res.status(400).json({
+			message: "Please Provide all required fields",
+		});
+	}
+
+	const rating = Number(reqRating);
+
+	if (rating < 1 || rating > 10 || !Number.isInteger(rating)) {
+		return res.status(400).json({
+			message: "Rating must be an integer between 1 and 10",
+		});
+	}
+
 	try {
-		const { id } = req.params;
-		const { reviewRating, reviewCount } = req.body;
-
-		if (!id) {
-			res.status(400).json({
-				success: false,
-				message: "Product ID is required.",
-			});
-			return;
-		}
-
-		if (reviewRating === undefined && reviewCount === undefined) {
-			res.status(400).json({
-				success: false,
-				message: "Provide reviewRating and/or reviewCount to update.",
-			});
-			return;
-		}
-
-		const data: { reviewRating?: number; reviewCount?: number } = {};
-
-		if (reviewRating !== undefined) {
-			const parsedRating = Number(reviewRating);
-			if (
-				!Number.isInteger(parsedRating) ||
-				parsedRating < 0 ||
-				parsedRating > 10
-			) {
-				res.status(400).json({
-					success: false,
-					message: "reviewRating must be an integer between 0 and 10.",
-				});
-				return;
-			}
-			data.reviewRating = parsedRating;
-		}
-
-		if (reviewCount !== undefined) {
-			const parsedCount = Number(reviewCount);
-			if (!Number.isInteger(parsedCount) || parsedCount < 0) {
-				res.status(400).json({
-					success: false,
-					message: "reviewCount must be a non-negative integer.",
-				});
-				return;
-			}
-			data.reviewCount = parsedCount;
-		}
-
-		const existing = await prismaPg.product.findUnique({
-			where: { id: id as string },
+		const productExits = await prismaPg.product.findUnique({
+			where: { id: productId as string },
 		});
-		if (!existing) {
-			res.status(404).json({
-				success: false,
-				message: "Product not found.",
-			});
-			return;
+		if (!productExits) {
+			return res
+				.status(404)
+				.json({ message: "Product not found" });
 		}
-
-		const product = await prismaPg.product.update({
-			where: { id: id as string },
-			data,
+		// Creating review
+		const review = await prismaMongo.review.create({
+			data: {
+				userId,
+				productId: productId as string,
+				comment,
+				rating,
+			},
 		});
-
-		res.status(200).json({
-			success: true,
-			data: product,
+		// Recalculating product's ratings
+		await calculateReviewCount(productId as string);
+		return res.status(201).json({
+			message: "Review created successfully",
+			review,
 		});
 	} catch (error) {
-		console.error("Error updating product rating:", error);
-		res.status(500).json({
+		// If product with the same userId and productId already exist respond with: 409 Conflict
+		if (
+			error instanceof PrismaClientKnownRequestError &&
+			error.code === "P2002"
+		) {
+			return res
+				.status(409)
+				.json({ message: "Only allowed 1 review per user" });
+		}
+		console.error(error);
+		return res.status(500).json({ message: "Internal server error", error });
+	}
+};
+
+export const getProductReviews = async (req: Request, res: Response) => {
+	const { id: productId } = req.params;
+
+	if (!productId) {
+		return res.status(400).json({
 			success: false,
-			message: "Server encountered an error while updating the product rating.",
+			message: "Product ID is required",
 		});
+	}
+
+	// Pagination n'allat
+	const page = Math.max(1, Number(req.query.page) || 1);
+	const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
+	const skip = (page - 1) * limit;
+	
+	try {
+		// Getting reviews and how many of them there are
+		const [reviews, totalCount] = await Promise.all([
+			prismaMongo.review.findMany({
+				where: { productId: productId as string },
+				orderBy: { createdAt: "desc" },
+				skip,
+				take: limit,
+			}),
+			prismaMongo.review.count({ where: { productId: productId as string } }),
+		]);
+
+		return res.status(200).json({
+			success: true,
+			pagination: {
+				page,
+				limit,
+				totalCount,
+				totalPages: Math.ceil(totalCount / limit),
+			},
+			reviews,
+		});
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({ message: "Internal server error", error });
 	}
 };
 
@@ -332,7 +374,7 @@ export const updateProduct = async (
 ): Promise<void> => {
 	try {
 		const { id } = req.params;
-		const { name, imageLink, price, category } = req.body;
+		const { name, price, category, description } = req.body;
 
 		if (!id) {
 			res.status(400).json({
@@ -344,9 +386,9 @@ export const updateProduct = async (
 
 		if (
 			name === undefined &&
-			imageLink === undefined &&
 			price === undefined &&
-			category === undefined
+			category === undefined &&
+			description === undefined
 		) {
 			res.status(400).json({
 				success: false,
@@ -355,16 +397,13 @@ export const updateProduct = async (
 			return;
 		}
 
-		const data: {
-			name?: string;
-			imageLink?: string;
-			price?: number;
-			category?: string;
-		} = {};
+		const data: Prisma.ProductUpdateInput = {};
 
 		if (name !== undefined) data.name = name as string;
-		if (imageLink !== undefined) data.imageLink = imageLink as string;
-		if (category !== undefined) data.category = category as string;
+		// if (imageLink !== undefined) data.imageLink = imageLink as string;
+		if (category !== undefined) {
+			data.category = { connect: { slug: category as string } };
+		}
 
 		if (price !== undefined) {
 			const parsedPrice = parseFloat(price as string);

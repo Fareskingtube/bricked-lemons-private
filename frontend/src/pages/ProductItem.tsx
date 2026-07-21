@@ -123,12 +123,7 @@ function ProductItem() {
 				<div className="flex flex-col gap-2">
 					<h3>Description:</h3>
 					<p>
-						Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sapiente,
-						provident expedita aspernatur optio aut voluptas placeat ut quae
-						iusto veniam sit vero eum impedit soluta tempore suscipit odit
-						asperiores odio, quos excepturi. Iste doloribus non dignissimos
-						harum, dolore optio nam quo delectus obcaecati numquam eos veniam
-						quae reprehenderit in totam.
+						{product?.description}
 					</p>
 				</div>
 			</div>
