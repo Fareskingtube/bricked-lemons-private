@@ -39,7 +39,7 @@ const cookieOptions: CookieOptions = {
 // Generating JWT token
 const generateToken = (id: string, role: string) => {
 	// Parsing JWT_SECRET with base64 and casting it to Secret
-	const secret: Secret = Buffer.from(process.env.JWT_SECRET!, "base64");
+	const secret: Secret = Buffer.from(requireEnv("JWT_SECRET"), "base64");
 
 	return jwt.sign({ id, role }, secret, {
 		algorithm: "HS512",

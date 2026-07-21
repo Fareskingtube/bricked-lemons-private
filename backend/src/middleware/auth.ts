@@ -2,6 +2,7 @@ import jwt, { type JwtPayload, type Secret } from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import { prismaPg } from "../config/dbs.ts";
 import type { User } from "../generated/prisma-postgres/index.js";
+import { requireEnv } from "../config/env.ts";
 
 // Interface
 interface AuthTokenPayload extends JwtPayload {
@@ -35,7 +36,7 @@ export const protect = async (
 				.json({ message: "Not authorized, no token found" });
 		}
 		// Parsing JWT_SECRET with base64 and casting it to Secret
-		const secret: Secret = Buffer.from(process.env.JWT_SECRET!, "base64");
+		const secret: Secret = Buffer.from(requireEnv("JWT_SECRET"), "base64");
 		// Verifying JWT integrity
 		const decoded = jwt.verify(token, secret) as AuthTokenPayload;
 
