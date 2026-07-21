@@ -9,7 +9,8 @@ import Cart from "./pages/Cart";
 import ProductItem from "./pages/ProductIDetails";
 import { UserProvider } from "./hooks/UseUser";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -28,8 +29,10 @@ function App() {
 						<Route path="/products/:id" element={<ProductItem />} />
 						<Route path="/products/search/:search" element={<Products />} />
 						<Route path="/cart" element={<Cart />} />
+						<Route path="/profile" element={<Profile />} />
 					</Routes>
-					<ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
+					{/* TODO: Remove */}
+					{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" /> */}
 				</QueryClientProvider>
 			</BrowserRouter>
 		</UserProvider>

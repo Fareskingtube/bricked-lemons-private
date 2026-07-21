@@ -1,12 +1,9 @@
 import { useState } from "react";
-import type { Product } from "./Products";
 import { ProductCard } from "../components/ProductCard";
 import { Link } from "react-router-dom";
+import type { CartItem } from "../hooks/UseOrder";
 
-export interface CartItem {
-	product: Product;
-	quantity: number;
-}
+
 
 function Cart() {
 	const [cart, setCart] = useState<CartItem[]>(() => {

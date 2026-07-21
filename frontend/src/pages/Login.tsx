@@ -1,5 +1,5 @@
 import { CgProfile } from "react-icons/cg";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
