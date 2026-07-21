@@ -21,6 +21,20 @@ function Profile() {
 		confirmPassword: "",
 	});
 
+	const resetFields = () => {
+		setSelectedFile(null);
+		setUserForum({
+			username: "",
+			email: "",
+		});
+		setPasswordForum({
+			currentPassword: "",
+			newPassword: "",
+			confirmPassword: "",
+		});
+        fetchUser()
+	};
+
 	const {
 		mutate: updateUser,
 		isPending,
@@ -31,80 +45,86 @@ function Profile() {
 	const {
 		mutate: updatePassword,
 		isSuccess: isPasswordSuccess,
-        isPending: isPasswordPending,
+		isPending: isPasswordPending,
 		error: updatePasswordError,
 	} = useUpdatePassword();
 
 	const navigate = useNavigate();
 
-    // Handles success and and error toasts and logging
+	// Handles success and and error toasts and logging
 	useEffect(() => {
-        if (isPending || isPasswordPending) {
-            return
-        }
-        
-        
+		if (isPending || isPasswordPending) {
+			return;
+		}
+
 		if (isSuccess) {
-            toast.success("User updated successfully");
-			fetchUser();
+			toast.success("User updated successfully");
+			resetFields()
 		}
 		if (isPasswordSuccess) {
             toast.success("Password changed successfully");
-			fetchUser();
+            resetFields()
 		}
 		if (updateUserError) {
-            if (updateUserError instanceof AxiosError) {
-                if (updateUserError.response) {
-                    // The server responded with a status code outside the 2xx range
+			if (updateUserError instanceof AxiosError) {
+				if (updateUserError.response) {
+					// The server responded with a status code outside the 2xx range
 					console.error("Server Error Data:", updateUserError.response.data);
 					console.error("Status Code:", updateUserError.response.status);
-                    
+
 					// Target your API's custom message layout (e.g., { message: "..." })
 					const apiMessage =
-                    updateUserError.response.data?.message || "Server error occurred";
+						updateUserError.response.data?.message || "Server error occurred";
 					toast.error(`Error: ${apiMessage}`);
 				} else if (updateUserError.request) {
-                    // The request was made but no response was received (e.g., network down)
+					// The request was made but no response was received (e.g., network down)
 					console.error("No Response Received:", updateUserError.request);
 					toast.error("Network error: Couldn't Connect to servers.");
 				} else {
-                    // Something happened setting up the request
+					// Something happened setting up the request
 					console.error("Request Setup Error:", updateUserError.message);
 					toast.error(`Config Error: ${updateUserError.message}`);
 				}
 			} else {
-                toast.error("An unexpected error has occurred");
+				toast.error("An unexpected error has occurred");
 			}
-        }
-        if (updatePasswordError) {
-            if (updatePasswordError instanceof AxiosError) {
-                if (updatePasswordError.response) {
-                    // The server responded with a status code outside the 2xx range
-                    console.error(
-                        "Server Error Data:",
-                        updatePasswordError.response.data,
-                    );
-                    console.error("Status Code:", updatePasswordError.response.status);
-
-                    // Target your API's custom message layout (e.g., { message: "..." })
-                    const apiMessage =
-                        updatePasswordError.response.data?.message ||
-                        "Server error occurred";
-                    toast.error(`Error: ${apiMessage}`);
-                } else if (updatePasswordError.request) {
-                    // The request was made but no response was received (e.g., network down)
-                    console.error("No Response Received:", updatePasswordError.request);
-                    toast.error("Network error: Couldn't Connect to servers.");
-                } else {
-                    // Something happened setting up the request
-                    console.error("Request Setup Error:", updatePasswordError.message);
-                    toast.error(`Config Error: ${updatePasswordError.message}`);
-                }
-            } else {
-                toast.error("An unexpected error has occurred");
-            }
 		}
-	}, [updateUserError, isSuccess, isPasswordSuccess, updatePasswordError, isPending, isPasswordPending]);
+		if (updatePasswordError) {
+			if (updatePasswordError instanceof AxiosError) {
+				if (updatePasswordError.response) {
+					// The server responded with a status code outside the 2xx range
+					console.error(
+						"Server Error Data:",
+						updatePasswordError.response.data,
+					);
+					console.error("Status Code:", updatePasswordError.response.status);
+
+					// Target your API's custom message layout (e.g., { message: "..." })
+					const apiMessage =
+						updatePasswordError.response.data?.message ||
+						"Server error occurred";
+					toast.error(`Error: ${apiMessage}`);
+				} else if (updatePasswordError.request) {
+					// The request was made but no response was received (e.g., network down)
+					console.error("No Response Received:", updatePasswordError.request);
+					toast.error("Network error: Couldn't Connect to servers.");
+				} else {
+					// Something happened setting up the request
+					console.error("Request Setup Error:", updatePasswordError.message);
+					toast.error(`Config Error: ${updatePasswordError.message}`);
+				}
+			} else {
+				toast.error("An unexpected error has occurred");
+			}
+		}
+	}, [
+		updateUserError,
+		isSuccess,
+		isPasswordSuccess,
+		updatePasswordError,
+		isPending,
+		isPasswordPending,
+	]);
 
 	useEffect(() => {
 		if (loading) return;
@@ -233,6 +253,7 @@ function Profile() {
 						<input
 							type="text"
 							placeholder="username"
+                            value={userForum.username}
 							onChange={(e) => {
 								setUserForum({ ...userForum, username: e.target.value });
 							}}
@@ -245,6 +266,7 @@ function Profile() {
 						<input
 							type="text"
 							placeholder="example@example.com"
+                            value={userForum.email}
 							onChange={(e) => {
 								setUserForum({ ...userForum, email: e.target.value });
 							}}
@@ -275,8 +297,9 @@ function Profile() {
 					<div className="ml-2">
 						<h2 className="mb-2 ml-2">Current Password:</h2>
 						<input
-							type="text"
+							type="password"
 							placeholder="current password"
+                            value={passwordForum.currentPassword}
 							onChange={(e) => {
 								setPasswordForum({
 									...passwordForum,
@@ -290,8 +313,9 @@ function Profile() {
 					<div className="ml-2">
 						<h2 className="mb-2 ml-2">New Password:</h2>
 						<input
-							type="text"
+							type="password"
 							placeholder="old password"
+                            value={passwordForum.newPassword}
 							onChange={(e) => {
 								setPasswordForum({
 									...passwordForum,
@@ -305,8 +329,9 @@ function Profile() {
 					<div className="ml-2">
 						<h2 className="mb-2 ml-2">Confirm Password:</h2>
 						<input
-							type="text"
+							type="password"
 							placeholder="confirm password"
+                            value={passwordForum.confirmPassword}
 							onChange={(e) => {
 								setPasswordForum({
 									...passwordForum,

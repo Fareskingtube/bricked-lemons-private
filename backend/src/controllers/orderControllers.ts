@@ -72,3 +72,24 @@ export const createOrder = async (req: Request, res: Response) => {
 		return res.status(500).json({ message: "Internal server error", error });
 	}
 };
+
+export const getOrders = async (req: Request, res: Response) => {
+	const userId = req.user?.id;
+
+	if (!userId) {
+		return res.status(401).json({ message: "Invalid User ID please login" });
+	}
+
+	try {
+		const orders = await prismaPg.order.findMany({
+			where: { userId },
+			include: { items: { include: { product: true } } },
+			orderBy: { createdAt: "desc" },
+		});
+
+		res.status(200).json({ orders });
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({ message: "Internal server error", error });
+	}
+};

@@ -9,12 +9,12 @@ export interface CartItem {
 	quantity: number;
 }
 
-interface Cart {
+export interface Cart {
     CartItems: CartItem[]
 }
 
 async function postOrder(params: Cart) {
-	const res = await api.get("/api/orders", { params });
+	const res = await api.post("/orders/", { items: params.CartItems } );
 	return res.data;
 }
 export const usePostOrder = () => {

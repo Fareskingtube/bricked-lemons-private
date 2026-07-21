@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import ProductRouter from "./routes/productsRouter.js";
 import AuthRouter from "./routes/authRouter.js";
-import OrderRouter from "./routes/orderRouter.js";
+import OrderRouter from "./routes/orderRoutes.ts";
 import { connectDBs, disconnectDBs } from "./config/dbs.ts";
 import cookieParser from "cookie-parser";
 import cors from "cors";

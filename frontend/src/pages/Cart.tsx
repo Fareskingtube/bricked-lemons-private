@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProductCard } from "../components/ProductCard";
 import { Link } from "react-router-dom";
-import type { CartItem } from "../hooks/UseOrder";
-
-
+import { usePostOrder, type CartItem } from "../hooks/UseOrder";
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 
 function Cart() {
 	const [cart, setCart] = useState<CartItem[]>(() => {
@@ -14,6 +14,59 @@ function Cart() {
 			return [];
 		}
 	});
+
+	const {
+		mutate: postOrder,
+		isSuccess: isSuccess,
+		isPending: isPending,
+		error: error,
+	} = usePostOrder();
+
+	const handleCreateOrder = () => {
+		if (!cart || cart.length === 0) {
+			toast.error("Cart is empty");
+			return;
+		}
+		postOrder({ CartItems: cart });
+	};
+
+
+	useEffect(() => {
+		
+		if (isPending) {
+			return
+        }
+        
+        
+		if (isSuccess) {
+			toast.success("Order created successfully");
+		}
+		
+		if (error) {
+            if (error instanceof AxiosError) {
+                if (error.response) {
+                    // The server responded with a status code outside the 2xx range
+					console.error("Server Error Data:", error.response.data);
+					console.error("Status Code:", error.response.status);
+                    
+					// Target your API's custom message layout (e.g., { message: "..." })
+					const apiMessage =
+                    error.response.data?.message || "Server error occurred";
+					toast.error(`Error: ${apiMessage}`);
+				} else if (error.request) {
+                    // The request was made but no response was received (e.g., network down)
+					console.error("No Response Received:", error.request);
+					toast.error("Network error: Couldn't Connect to servers.");
+				} else {
+                    // Something happened setting up the request
+					console.error("Request Setup Error:", error.message);
+					toast.error(`Config Error: ${error.message}`);
+				}
+			} else {
+                toast.error("An unexpected error has occurred");
+			}
+        }
+	}, [error, isSuccess, isPending]);
 
 	return (
 		<div className="w-screen h-screen mt-10">
@@ -46,19 +99,20 @@ function Cart() {
 							$
 							{cart.reduce(
 								(accumulator, currentItem) =>
-									accumulator + currentItem.product.price * currentItem.quantity,
+									accumulator +
+									currentItem.product.price * currentItem.quantity,
 								0,
 							)}
 						</h1>
 					</div>
-					<Link
-						to={"/checkout"}
+					<button
+						onClick={handleCreateOrder}
 						className="w-fit p-3 rounded-2xl mt-4 mb-1 bg-primary-500 hover:bg-primary-600 transition-colors duration-100 "
 					>
 						<span className="font-bold dark:text-accent-100 text-accent-900">
 							Buy Now
 						</span>
-					</Link>
+					</button>
 				</div>
 			</div>
 		</div>
