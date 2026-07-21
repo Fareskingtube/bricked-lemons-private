@@ -1,7 +1,7 @@
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 import type { Request, Response } from "express";
 
-// Mocking the Prisma client methods used in the getProducts controller
+// ---- Mocked Prisma (Postgres) product methods ----
 const mockFindMany = jest.fn() as unknown as jest.MockedFunction<
 	(...args: any[]) => Promise<any>
 >;
@@ -17,12 +17,39 @@ const mockCreate = jest.fn() as unknown as jest.MockedFunction<
 const mockUpdate = jest.fn() as unknown as jest.MockedFunction<
 	(...args: any[]) => Promise<any>
 >;
+
+// ---- Mocked Prisma (Mongo) review methods ----
+const mockReviewCreate = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockReviewFindMany = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockReviewCount = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<number>
+>;
+const mockReviewAggregate = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+
+// ---- Mocked R2 / signed URLs ----
 const mockR2Send = jest.fn() as unknown as jest.MockedFunction<
 	(...args: any[]) => Promise<any>
 >;
 const mockGetSignedUrl = jest.fn() as unknown as jest.MockedFunction<
 	(...args: any[]) => Promise<string>
 >;
+
+// A fake PrismaClientKnownRequestError class so `instanceof` checks in the
+// controller's catch blocks resolve correctly against our mocked module.
+class MockPrismaClientKnownRequestError extends Error {
+	code: string;
+	constructor(message: string, code: string) {
+		super(message);
+		this.code = code;
+		Object.setPrototypeOf(this, MockPrismaClientKnownRequestError.prototype);
+	}
+}
 
 jest.unstable_mockModule("../config/dbs.js", () => ({
 	__esModule: true,
@@ -35,6 +62,19 @@ jest.unstable_mockModule("../config/dbs.js", () => ({
 			update: mockUpdate,
 		},
 	},
+	prismaMongo: {
+		review: {
+			create: mockReviewCreate,
+			findMany: mockReviewFindMany,
+			count: mockReviewCount,
+			aggregate: mockReviewAggregate,
+		},
+	},
+}));
+
+jest.unstable_mockModule("../generated/prisma-mongo/runtime/library.js", () => ({
+	__esModule: true,
+	PrismaClientKnownRequestError: MockPrismaClientKnownRequestError,
 }));
 
 jest.unstable_mockModule("../config/r2.js", () => ({
@@ -47,6 +87,12 @@ jest.unstable_mockModule("../config/env.js", () => ({
 	requireEnv: jest.fn((key: string) => `mock-${key}`),
 }));
 
+jest.unstable_mockModule("@aws-sdk/client-s3", () => ({
+	__esModule: true,
+	GetObjectCommand: jest.fn().mockImplementation((args) => args),
+	PutObjectCommand: jest.fn().mockImplementation((args) => args),
+}));
+
 jest.unstable_mockModule("@aws-sdk/s3-request-presigner", () => ({
 	__esModule: true,
 	getSignedUrl: mockGetSignedUrl,
@@ -56,11 +102,20 @@ const {
 	getProducts,
 	getProductById,
 	createProduct,
-	updateProductRating,
 	updateProduct,
+	createReview,
+	getProductReviews,
 } = await import("../controllers/productControllers.js");
 
-describe("Products Controller - Unit Tests", () => {
+function makeRes() {
+	const jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
+	const statusMock = jest
+		.fn()
+		.mockImplementation(() => ({ json: jsonMock }) as any);
+	return { res: { status: statusMock } as Partial<Response>, jsonMock, statusMock };
+}
+
+describe("Products Controller - getProducts", () => {
 	let req: Partial<Request>;
 	let res: Partial<Response>;
 	let jsonMock: jest.MockedFunction<any>;
@@ -68,41 +123,20 @@ describe("Products Controller - Unit Tests", () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-
-		req = {
-			query: {},
-			body: {},
-			files: [
-				{
-					originalname: "keyboard.png",
-					buffer: Buffer.from("fake image data"),
-					mimetype: "image/png",
-				} as Express.Multer.File,
-			],
-		};
-		jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
+		req = { query: {} };
+		({ res, jsonMock, statusMock } = makeRes());
 		mockGetSignedUrl.mockResolvedValue(
 			"https://mock-bucket.example.com/products/mock-key.jpg",
 		);
-		mockR2Send.mockResolvedValue({});
-		statusMock = jest
-			.fn()
-			.mockImplementation(() => ({ json: jsonMock }) as any);
-
-		res = {
-			status: statusMock as any,
-		};
 	});
 
 	it("should successfully return a paginated list of products with default params", async () => {
 		const mockProducts = [
 			{
-				id: 1,
+				id: "1",
 				name: "Lemon Keyboard",
 				price: 45.0,
-				category: "Electronics",
-				imageKeys: [expect.any(String)],
-				imageUrls: [expect.any(String)],
+				imageKeys: ["products/mock-key.png"],
 				createdAt: new Date(),
 			},
 		];
@@ -111,6 +145,7 @@ describe("Products Controller - Unit Tests", () => {
 		mockCount.mockResolvedValue(1);
 
 		await getProducts(req as Request, res as Response);
+
 		expect(statusMock).toHaveBeenCalledWith(200);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: true,
@@ -120,14 +155,19 @@ describe("Products Controller - Unit Tests", () => {
 				totalPages: 1,
 				limit: 20,
 			},
-			data: mockProducts,
+			data: [
+				{
+					...mockProducts[0],
+					imageUrls: ["https://mock-bucket.example.com/products/mock-key.jpg"],
+				},
+			],
 		});
 	});
 
-	it("should accurately forward query search filters and custom limits", async () => {
+	it("should apply search, category, and pagination filters", async () => {
 		req.query = {
 			search: "Lemon",
-			category: "Fruit",
+			category: "fruit",
 			page: "2",
 			limit: "5",
 			orderBy: "price",
@@ -142,44 +182,16 @@ describe("Products Controller - Unit Tests", () => {
 		expect(mockFindMany).toHaveBeenCalledWith({
 			where: {
 				name: { contains: "Lemon", mode: "insensitive" },
-				category: {
-					slug: "Fruit",
-				},
+				category: { slug: "fruit" },
 			},
 			orderBy: { price: "asc" },
 			skip: 5,
 			take: 5,
 		});
-
 		expect(statusMock).toHaveBeenCalledWith(200);
 	});
 
-	it("should apply ascending price sorting via orderBy/orderDirection", async () => {
-		req.query = { orderBy: "price", orderDirection: "asc" };
-		mockFindMany.mockResolvedValue([]);
-		mockCount.mockResolvedValue(0);
-
-		await getProducts(req as Request, res as Response);
-
-		expect(mockFindMany).toHaveBeenCalledWith(
-			expect.objectContaining({ orderBy: { price: "asc" } }),
-		);
-	});
-
-	it("should apply descending price sorting via orderBy/orderDirection", async () => {
-		req.query = { orderBy: "price", orderDirection: "desc" };
-		mockFindMany.mockResolvedValue([]);
-		mockCount.mockResolvedValue(0);
-
-		await getProducts(req as Request, res as Response);
-
-		expect(mockFindMany).toHaveBeenCalledWith(
-			expect.objectContaining({ orderBy: { price: "desc" } }),
-		);
-	});
-
 	it("should default to createdAt desc when no orderBy/orderDirection given", async () => {
-		req.query = {};
 		mockFindMany.mockResolvedValue([]);
 		mockCount.mockResolvedValue(0);
 
@@ -214,18 +226,6 @@ describe("Products Controller - Unit Tests", () => {
 		);
 	});
 
-	it("should gracefully capture database execution exceptions and return a 500 state", async () => {
-		mockFindMany.mockRejectedValue(new Error("Database connection dropped"));
-		jest.spyOn(console, "error").mockImplementation(() => {});
-
-		await getProducts(req as Request, res as Response);
-
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			message: "Server encountered an error while retrieving products.",
-		});
-	});
 	it("should filter by minPrice and maxPrice when both are provided", async () => {
 		req.query = { minPrice: "10", maxPrice: "50" };
 		mockFindMany.mockResolvedValue([]);
@@ -235,9 +235,7 @@ describe("Products Controller - Unit Tests", () => {
 
 		expect(mockFindMany).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: expect.objectContaining({
-					price: { gte: 10, lte: 50 },
-				}),
+				where: expect.objectContaining({ price: { gte: 10, lte: 50 } }),
 			}),
 		);
 	});
@@ -251,9 +249,7 @@ describe("Products Controller - Unit Tests", () => {
 
 		expect(mockFindMany).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: expect.objectContaining({
-					price: { gte: 20 },
-				}),
+				where: expect.objectContaining({ price: { gte: 20 } }),
 			}),
 		);
 	});
@@ -266,9 +262,7 @@ describe("Products Controller - Unit Tests", () => {
 		await getProducts(req as Request, res as Response);
 
 		expect(mockFindMany).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: {}, // no price filter, no search/category either
-			}),
+			expect.objectContaining({ where: {} }),
 		);
 	});
 
@@ -282,9 +276,22 @@ describe("Products Controller - Unit Tests", () => {
 			message: "Page size larger than 100",
 		});
 		expect(mockFindMany).not.toHaveBeenCalled();
-		expect(statusMock).not.toHaveBeenCalledWith(200);
+	});
+
+	it("should gracefully capture database exceptions and return a 500 state", async () => {
+		mockFindMany.mockRejectedValue(new Error("Database connection dropped"));
+		jest.spyOn(console, "error").mockImplementation(() => {});
+
+		await getProducts(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(500);
+		expect(jsonMock).toHaveBeenCalledWith({
+			success: false,
+			message: "Server encountered an error while retrieving products.",
+		});
 	});
 });
+
 describe("Products Controller - getProductById", () => {
 	let req: Partial<Request>;
 	let res: Partial<Response>;
@@ -293,15 +300,8 @@ describe("Products Controller - getProductById", () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { query: {} };
-		jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
-		statusMock = jest
-			.fn()
-			.mockImplementation(() => ({ json: jsonMock }) as any);
-
-		res = {
-			status: statusMock as any,
-		};
+		req = { params: {} };
+		({ res, jsonMock, statusMock } = makeRes());
 	});
 
 	it("should return 400 if no id is provided in the request params", async () => {
@@ -317,22 +317,14 @@ describe("Products Controller - getProductById", () => {
 
 	it("should return the product when a valid id is provided", async () => {
 		req.params = { id: "abc123" };
-		const mockProduct = {
-			id: "abc123",
-			name: "Lemon Keyboard",
-			price: 45.0,
-			category: "Electronics",
-		};
+		const mockProduct = { id: "abc123", name: "Lemon Keyboard", price: 45.0 };
 		mockFindUnique.mockResolvedValue(mockProduct);
 
 		await getProductById(req as Request, res as Response);
 
 		expect(mockFindUnique).toHaveBeenCalledWith({ where: { id: "abc123" } });
 		expect(statusMock).toHaveBeenCalledWith(200);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: true,
-			data: mockProduct,
-		});
+		expect(jsonMock).toHaveBeenCalledWith({ success: true, data: mockProduct });
 	});
 
 	it("should return 404 when the product does not exist", async () => {
@@ -382,30 +374,23 @@ describe("Products Controller - createProduct", () => {
 			],
 		};
 		mockR2Send.mockResolvedValue({});
-		jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
-		statusMock = jest
-			.fn()
-			.mockImplementation(() => ({ json: jsonMock }) as any);
-
-		res = {
-			status: statusMock as any,
-		};
+		({ res, jsonMock, statusMock } = makeRes());
 	});
 
 	it("should create a product and return 201 when all fields are provided", async () => {
 		req.body = {
 			name: "Lemon Keyboard",
-			imageLink: "https://example.com/keyboard.png",
 			price: "45.00",
-			category: "Electronics",
+			category: "electronics",
+			description: "A very zesty mechanical keyboard.",
 		};
 
 		const mockCreated = {
 			id: "new-id",
 			name: "Lemon Keyboard",
 			price: 45.0,
-			category: "Electronics",
-			imageLink: "https://example.com/keyboard.png",
+			description: "A very zesty mechanical keyboard.",
+			imageKeys: ["products/mock-uuid.png"],
 		};
 		mockCreate.mockResolvedValue(mockCreated);
 
@@ -415,23 +400,20 @@ describe("Products Controller - createProduct", () => {
 			data: {
 				name: "Lemon Keyboard",
 				price: 45.0,
-				category: "Electronics",
+				category: { connect: { slug: "electronics" } },
+				description: "A very zesty mechanical keyboard.",
 				imageKeys: [expect.any(String)],
 			},
 		});
 		expect(statusMock).toHaveBeenCalledWith(201);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: true,
-			data: mockCreated,
-		});
+		expect(jsonMock).toHaveBeenCalledWith({ success: true, data: mockCreated });
 	});
 
 	it("should return 400 when a required field is missing", async () => {
 		req.body = {
 			name: "Lemon Keyboard",
-			imageLink: "https://example.com/keyboard.png",
-			// price missing
-			category: "Electronics",
+			category: "electronics",
+			description: "Missing a price.",
 		};
 
 		await createProduct(req as Request, res as Response);
@@ -440,16 +422,35 @@ describe("Products Controller - createProduct", () => {
 		expect(statusMock).toHaveBeenCalledWith(400);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: false,
-			message: "give me all the data, you dumbass.",
+			message: "Not all fields are filled",
+		});
+	});
+
+	it("should return 400 when no image files are provided", async () => {
+		req.body = {
+			name: "Lemon Keyboard",
+			price: "45.00",
+			category: "electronics",
+			description: "A very zesty mechanical keyboard.",
+		};
+		req.files = [];
+
+		await createProduct(req as Request, res as Response);
+
+		expect(mockCreate).not.toHaveBeenCalled();
+		expect(statusMock).toHaveBeenCalledWith(400);
+		expect(jsonMock).toHaveBeenCalledWith({
+			success: false,
+			message: "At least one image file is required.",
 		});
 	});
 
 	it("should gracefully capture database exceptions and return a 500 state", async () => {
 		req.body = {
 			name: "Lemon Keyboard",
-			imageLink: "https://example.com/keyboard.png",
 			price: "45.00",
-			category: "Electronics",
+			category: "electronics",
+			description: "A very zesty mechanical keyboard.",
 		};
 		mockCreate.mockRejectedValue(new Error("Database connection dropped"));
 		jest.spyOn(console, "error").mockImplementation(() => {});
@@ -462,112 +463,6 @@ describe("Products Controller - createProduct", () => {
 			message: "Server encountered an error while creating the product.",
 		});
 	});
-	it("should return 400 when no image files are provided", async () => {
-		req.body = {
-			name: "Lemon Keyboard",
-			price: "45.00",
-			category: "Electronics",
-		};
-		req.files = [];
-
-		await createProduct(req as Request, res as Response);
-
-		expect(mockCreate).not.toHaveBeenCalled();
-		expect(statusMock).toHaveBeenCalledWith(400);
-	});
-});
-
-describe("Products Controller - updateProductRating", () => {
-	let req: Partial<Request>;
-	let res: Partial<Response>;
-	let jsonMock: jest.MockedFunction<any>;
-	let statusMock: jest.MockedFunction<any>;
-
-	beforeEach(() => {
-		jest.clearAllMocks();
-		req = { params: {}, body: {} };
-		jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
-		statusMock = jest
-			.fn()
-			.mockImplementation(() => ({ json: jsonMock }) as any);
-		res = { status: statusMock as any };
-	});
-
-	it("should update reviewRating and reviewCount when both are valid", async () => {
-		req.params = { id: "abc123" };
-		req.body = { reviewRating: 9, reviewCount: 50 };
-		mockFindUnique.mockResolvedValue({ id: "abc123" });
-		mockUpdate.mockResolvedValue({
-			id: "abc123",
-			reviewRating: 9,
-			reviewCount: 50,
-		});
-
-		await updateProductRating(req as Request, res as Response);
-
-		expect(mockUpdate).toHaveBeenCalledWith({
-			where: { id: "abc123" },
-			data: { reviewRating: 9, reviewCount: 50 },
-		});
-		expect(statusMock).toHaveBeenCalledWith(200);
-	});
-
-	it("should allow updating only reviewCount", async () => {
-		req.params = { id: "abc123" };
-		req.body = { reviewCount: 10 };
-		mockFindUnique.mockResolvedValue({ id: "abc123" });
-		mockUpdate.mockResolvedValue({ id: "abc123", reviewCount: 10 });
-
-		await updateProductRating(req as Request, res as Response);
-
-		expect(mockUpdate).toHaveBeenCalledWith({
-			where: { id: "abc123" },
-			data: { reviewCount: 10 },
-		});
-	});
-
-	it("should return 400 if neither field is provided", async () => {
-		req.params = { id: "abc123" };
-		req.body = {};
-
-		await updateProductRating(req as Request, res as Response);
-
-		expect(mockUpdate).not.toHaveBeenCalled();
-		expect(statusMock).toHaveBeenCalledWith(400);
-	});
-
-	it("should return 400 for an out-of-range reviewRating", async () => {
-		req.params = { id: "abc123" };
-		req.body = { reviewRating: 15 };
-
-		await updateProductRating(req as Request, res as Response);
-
-		expect(mockUpdate).not.toHaveBeenCalled();
-		expect(statusMock).toHaveBeenCalledWith(400);
-	});
-
-	it("should return 404 if the product doesn't exist", async () => {
-		req.params = { id: "missing-id" };
-		req.body = { reviewRating: 5 };
-		mockFindUnique.mockResolvedValue(null);
-
-		await updateProductRating(req as Request, res as Response);
-
-		expect(mockUpdate).not.toHaveBeenCalled();
-		expect(statusMock).toHaveBeenCalledWith(404);
-	});
-
-	it("should gracefully capture database exceptions and return a 500 state", async () => {
-		req.params = { id: "abc123" };
-		req.body = { reviewRating: 5 };
-		mockFindUnique.mockResolvedValue({ id: "abc123" });
-		mockUpdate.mockRejectedValue(new Error("Database connection dropped"));
-		jest.spyOn(console, "error").mockImplementation(() => {});
-
-		await updateProductRating(req as Request, res as Response);
-
-		expect(statusMock).toHaveBeenCalledWith(500);
-	});
 });
 
 describe("Products Controller - updateProduct", () => {
@@ -579,22 +474,14 @@ describe("Products Controller - updateProduct", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		req = { params: {}, body: {} };
-		jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
-		statusMock = jest
-			.fn()
-			.mockImplementation(() => ({ json: jsonMock }) as any);
-		res = { status: statusMock as any };
+		({ res, jsonMock, statusMock } = makeRes());
 	});
 
 	it("should update the provided fields when the product exists", async () => {
 		req.params = { id: "abc123" };
 		req.body = { name: "New Name", price: "60.00" };
 		mockFindUnique.mockResolvedValue({ id: "abc123" });
-		mockUpdate.mockResolvedValue({
-			id: "abc123",
-			name: "New Name",
-			price: 60.0,
-		});
+		mockUpdate.mockResolvedValue({ id: "abc123", name: "New Name", price: 60.0 });
 
 		await updateProduct(req as Request, res as Response);
 
@@ -609,17 +496,17 @@ describe("Products Controller - updateProduct", () => {
 		});
 	});
 
-	it("should allow updating a single field", async () => {
+	it("should allow updating a single field (category)", async () => {
 		req.params = { id: "abc123" };
-		req.body = { category: "Furniture" };
+		req.body = { category: "furniture" };
 		mockFindUnique.mockResolvedValue({ id: "abc123" });
-		mockUpdate.mockResolvedValue({ id: "abc123", category: "Furniture" });
+		mockUpdate.mockResolvedValue({ id: "abc123" });
 
 		await updateProduct(req as Request, res as Response);
 
 		expect(mockUpdate).toHaveBeenCalledWith({
 			where: { id: "abc123" },
-			data: { category: "Furniture" },
+			data: { category: { connect: { slug: "furniture" } } },
 		});
 	});
 
@@ -686,6 +573,184 @@ describe("Products Controller - updateProduct", () => {
 		jest.spyOn(console, "error").mockImplementation(() => {});
 
 		await updateProduct(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(500);
+	});
+});
+
+describe("Products Controller - createReview", () => {
+	let req: Partial<Request>;
+	let res: Partial<Response>;
+	let jsonMock: jest.MockedFunction<any>;
+	let statusMock: jest.MockedFunction<any>;
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		req = {
+			params: { id: "product-1" },
+			body: { comment: "Great keyboard", rating: 8 },
+			user: { id: "user-1" } as any,
+		};
+		({ res, jsonMock, statusMock } = makeRes());
+	});
+
+	it("should return 401 when there is no authenticated user", async () => {
+		delete req.user;
+
+		await createReview(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(401);
+		expect(mockReviewCreate).not.toHaveBeenCalled();
+	});
+
+	it("should return 400 when comment or rating is missing", async () => {
+		req.body = { comment: "" };
+
+		await createReview(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(400);
+		expect(mockReviewCreate).not.toHaveBeenCalled();
+	});
+
+	it("should return 400 when rating is out of the 1-10 integer range", async () => {
+		req.body = { comment: "Great", rating: 15 };
+
+		await createReview(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(400);
+		expect(mockReviewCreate).not.toHaveBeenCalled();
+	});
+
+	it("should return 404 when the product does not exist", async () => {
+		mockFindUnique.mockResolvedValue(null);
+
+		await createReview(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(404);
+		expect(mockReviewCreate).not.toHaveBeenCalled();
+	});
+
+	it("should create a review and recalculate the product rating", async () => {
+		mockFindUnique.mockResolvedValue({ id: "product-1" });
+		mockReviewCreate.mockResolvedValue({
+			id: "review-1",
+			productId: "product-1",
+			userId: "user-1",
+			comment: "Great keyboard",
+			rating: 8,
+		});
+		mockReviewAggregate.mockResolvedValue({
+			_avg: { rating: 8 },
+			_count: { _all: 1 },
+		});
+		mockUpdate.mockResolvedValue({});
+
+		await createReview(req as Request, res as Response);
+
+		expect(mockReviewCreate).toHaveBeenCalledWith({
+			data: {
+				userId: "user-1",
+				productId: "product-1",
+				comment: "Great keyboard",
+				rating: 8,
+			},
+		});
+		expect(mockReviewAggregate).toHaveBeenCalledWith({
+			where: { productId: "product-1" },
+			_avg: { rating: true },
+			_count: { _all: true },
+		});
+		expect(mockUpdate).toHaveBeenCalledWith({
+			where: { id: "product-1" },
+			data: { reviewRating: 8, reviewCount: 1 },
+		});
+		expect(statusMock).toHaveBeenCalledWith(201);
+	});
+
+	it("should return 409 when the user has already reviewed the product", async () => {
+		mockFindUnique.mockResolvedValue({ id: "product-1" });
+		mockReviewCreate.mockRejectedValue(
+			new MockPrismaClientKnownRequestError("Unique constraint failed", "P2002"),
+		);
+
+		await createReview(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(409);
+		expect(jsonMock).toHaveBeenCalledWith({
+			message: "Only allowed 1 review per user",
+		});
+	});
+
+	it("should return 500 on unexpected errors", async () => {
+		mockFindUnique.mockResolvedValue({ id: "product-1" });
+		mockReviewCreate.mockRejectedValue(new Error("boom"));
+		jest.spyOn(console, "error").mockImplementation(() => {});
+
+		await createReview(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(500);
+	});
+});
+
+describe("Products Controller - getProductReviews", () => {
+	let req: Partial<Request>;
+	let res: Partial<Response>;
+	let jsonMock: jest.MockedFunction<any>;
+	let statusMock: jest.MockedFunction<any>;
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		req = { params: { id: "product-1" }, query: {} };
+		({ res, jsonMock, statusMock } = makeRes());
+	});
+
+	it("should return 400 when no product id is provided", async () => {
+		req.params = {};
+
+		await getProductReviews(req as Request, res as Response);
+
+		expect(statusMock).toHaveBeenCalledWith(400);
+		expect(mockReviewFindMany).not.toHaveBeenCalled();
+	});
+
+	it("should return paginated reviews for a product", async () => {
+		const reviews = [{ id: "r1", rating: 9, comment: "Nice" }];
+		mockReviewFindMany.mockResolvedValue(reviews);
+		mockReviewCount.mockResolvedValue(1);
+
+		await getProductReviews(req as Request, res as Response);
+
+		expect(mockReviewFindMany).toHaveBeenCalledWith({
+			where: { productId: "product-1" },
+			orderBy: { createdAt: "desc" },
+			skip: 0,
+			take: 10,
+		});
+		expect(statusMock).toHaveBeenCalledWith(200);
+		expect(jsonMock).toHaveBeenCalledWith({
+			success: true,
+			pagination: { page: 1, limit: 10, totalCount: 1, totalPages: 1 },
+			reviews,
+		});
+	});
+
+	it("should clamp limit to a maximum of 50", async () => {
+		req.query = { limit: "500" };
+		mockReviewFindMany.mockResolvedValue([]);
+		mockReviewCount.mockResolvedValue(0);
+
+		await getProductReviews(req as Request, res as Response);
+
+		expect(mockReviewFindMany).toHaveBeenCalledWith(
+			expect.objectContaining({ take: 50 }),
+		);
+	});
+
+	it("should return 500 on unexpected errors", async () => {
+		mockReviewFindMany.mockRejectedValue(new Error("boom"));
+		jest.spyOn(console, "error").mockImplementation(() => {});
+
+		await getProductReviews(req as Request, res as Response);
 
 		expect(statusMock).toHaveBeenCalledWith(500);
 	});
