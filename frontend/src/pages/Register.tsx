@@ -1,10 +1,10 @@
 import { CgProfile } from "react-icons/cg";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import api from "../config/axios";
-import { UserContext } from "../App";
+import { useUser } from "../hooks/UseUser";
 
 function Register() {
 	const [forum, setForum] = useState({
@@ -13,7 +13,7 @@ function Register() {
 		password: "",
 	});
 
-	const userContext = useContext(UserContext);
+	const { fetchUser } = useUser();
 	const navigate = useNavigate();
 
 	// On submit query database for user and show toast based on Error or success
@@ -30,11 +30,7 @@ function Register() {
 				setForum({ username: "", email: "", password: "" });
 				console.log(res.data);
 
-				userContext?.setUser({
-					id: res.data?.user?.id,
-					username: res.data?.user?.username,
-					role: res.data?.user?.role,
-				});
+				fetchUser();
 
 				navigate("/", { replace: true });
 				toast.success("Account made successfully");

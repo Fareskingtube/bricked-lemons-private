@@ -3,7 +3,6 @@ import {
 	getProducts,
 	getProductById,
 	createProduct,
-	updateProduct,
 	createReview,
 	getProductReviews,
 } from "../controllers/productControllers.js";

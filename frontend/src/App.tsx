@@ -1,68 +1,38 @@
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { createContext, useEffect, useState } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { Toaster } from "react-hot-toast";
-import api from "./config/axios";
 import Products from "./pages/Products";
 import Cart from "./pages/Cart";
-import ProductItem from "./pages/ProductItem";
+import ProductItem from "./pages/ProductIDetails";
+import { UserProvider } from "./hooks/UseUser";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-export interface User {
-	id: string;
-	username: string;
-	role: string;
-}
-
-interface UserContextType {
-	user: User | null;
-	setUser: (user: User | null) => void;
-}
-
-export const UserContext = createContext<UserContextType | null>(null);
+const queryClient = new QueryClient();
 
 function App() {
-	
-	// Creating user state to put in the UserContext
-	const [user, setUser] = useState<User | null>(null);
-	// Fetching current user info setting it to user state (Uses the JWT from HTTP only cookie to get current user)
-	useEffect(() => {
-		const fetchUser = async () => {
-			try {
-				const res = await api.get("/auth/me");
-				const fetchedUser: User = {
-					id: res.data?.id,
-					username: res.data?.username,
-					role: res.data?.role,
-				};
-				
-				setUser(fetchedUser);
-			} catch (error: unknown) {
-				setUser(null);
-				console.error(error);
-			}
-		};
-		fetchUser();
-	}, [user]);
-
 	return (
-		<UserContext.Provider value={{user, setUser}}>
+		<UserProvider>
 			<BrowserRouter>
-				<Navbar />
-				<Toaster />
-				<Routes>
-					<Route path="/" element={<Home />} />
-					<Route path="/login" element={<Login />} />
-					<Route path="/register" element={<Register />} />
-					<Route path="/products" element={<Products />} />
-					<Route path="/products/:id" element={<ProductItem />} />
-					<Route path="/products/search/:search" element={<Products />} />
-					<Route path="/cart" element={<Cart />} />
-				</Routes>
+				<QueryClientProvider client={queryClient}>
+					<Navbar />
+					<Toaster />
+					<Routes>
+						<Route path="/" element={<Home />} />
+						<Route path="/login" element={<Login />} />
+						<Route path="/register" element={<Register />} />
+						<Route path="/products" element={<Products />} />
+						<Route path="/products/:id" element={<ProductItem />} />
+						<Route path="/products/search/:search" element={<Products />} />
+						<Route path="/cart" element={<Cart />} />
+					</Routes>
+					<ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
+				</QueryClientProvider>
 			</BrowserRouter>
-		</UserContext.Provider>
+		</UserProvider>
 	);
 }
 

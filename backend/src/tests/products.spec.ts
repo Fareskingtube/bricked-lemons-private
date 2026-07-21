@@ -317,7 +317,7 @@ describe("Products Controller - getProductById", () => {
 
 	it("should return the product when a valid id is provided", async () => {
 		req.params = { id: "abc123" };
-		const mockProduct = { id: "abc123", name: "Lemon Keyboard", price: 45.0 };
+		const mockProduct = { id: "abc123", name: "Lemon Keyboard", price: 45.0, imageUrls: [], imageKeys: [] };
 		mockFindUnique.mockResolvedValue(mockProduct);
 
 		await getProductById(req as Request, res as Response);

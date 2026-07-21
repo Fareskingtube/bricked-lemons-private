@@ -1,29 +1,29 @@
 import { type PropsWithChildren } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { type User } from "../App";
 import api from "../config/axios";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
+import type { User } from "../hooks/UseUser";
 
 interface DropdownProps {
 	isOpen: boolean;
 	user: User | null;
-	setUser: (user: User | null) => void;
+	fetchUser: () => void;
 	handleToggle: () => void;
 }
 
 function Dropdown({
 	user,
 	isOpen,
-	setUser,
 	handleToggle,
+	fetchUser,
 	children,
 }: PropsWithChildren<DropdownProps>) {
 	const navigate = useNavigate();
 	const handleLogout = async () => {
 		try {
 			await api.post("/auth/logout");
-			setUser(null);
+			fetchUser();
 			handleToggle();
 			navigate("/", { replace: true });
 			toast.success("Logged out successfully");

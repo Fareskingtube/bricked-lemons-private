@@ -81,8 +81,6 @@ Open the `.env` files in both `/frontend` and `/backend` directories and set the
 
 Run:
 
-<!-- TODO: Add MongoDB seed and seed both DBs with npm run seed  -->
-
 ```sh
 # Start the backend server
 cd backend

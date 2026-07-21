@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import api from "../config/axios";
-import { UserContext } from "../App";
+import { useUser } from "../hooks/UseUser";
 
 function Login() {
 	const [forum, setForum] = useState({
@@ -12,7 +12,7 @@ function Login() {
 		password: "",
 	});
 
-	const userContext = useContext(UserContext);
+	const { fetchUser } = useUser();
 	const navigate = useNavigate();
 
 	// On submit query database for user and show toast based on Error or success
@@ -27,11 +27,7 @@ function Login() {
 			// On Success reset forum state and setUser Context then go to home page
 			if (res.status === 200) {
 				setForum({ email: "", password: "" });
-				userContext?.setUser({
-					id: res.data?.user?.id,
-					username: res.data?.user?.username,
-					role: res.data?.user?.role,
-				});
+				fetchUser();
 
 				navigate("/", { replace: true });
 				toast.success("Logged in successfully");

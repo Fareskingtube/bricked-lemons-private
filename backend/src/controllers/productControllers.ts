@@ -7,7 +7,6 @@ import path from "path";
 import { r2 } from "../config/r2.ts";
 import type { Prisma, Product } from "../generated/prisma-postgres/index.js";
 import { PrismaClientKnownRequestError } from "../generated/prisma-mongo/runtime/library.js";
-import { protect } from "../middleware/auth.ts";
 
 interface ProductWithImageUrl extends Product {
 	imageUrls: (string | null)[];
@@ -166,7 +165,7 @@ export const getProductById = async (
 
 		res.status(200).json({
 			success: true,
-			data: product,
+			data: await getProductWithImageUrl(product),
 		});
 	} catch (error) {
 		console.error("Error fetching product by ID:", error);

@@ -5,11 +5,11 @@ import { BiFirstPage } from "react-icons/bi";
 import { Select } from "../components/Select";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import ProductList from "../components/ProductList";
-import api from "../config/axios";
 import { Link, useParams } from "react-router-dom";
 import getPageSelectorList from "../util/pageSelectorHelper";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
+import { useProducts } from "../hooks/UseProducts";
 
 export interface Product {
 	id: string;
@@ -25,66 +25,48 @@ export interface Product {
 }
 
 function Products() {
-	const [loading, setLoading] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
-	const [totalPages, setTotalPages] = useState(1);
+
 	const [limit, setLimit] = useState(20);
 	const [maxPrice, setMaxPrice] = useState<number | string>("");
 	const [minPrice, setMinPrice] = useState<number | string>("");
 	const [category, setCategory] = useState("");
-	const [products, setProducts] = useState<Product[]>([]);
 	const [sortBy, setSortBy] = useState("");
 	const [sortDir, setSortDir] = useState("");
 
 	const { search } = useParams();
 
-	useEffect(() => {
-		try {
-			const fetchProducts = async () => {
-				setLoading(true);
-				const res = await api.get(
-					`/products/?limit=${limit || 20}&page=${currentPage}&category=${category}&minPrice=${minPrice}&maxPrice=${maxPrice}&orderBy=${sortBy}&orderDirection=${sortDir || "asc"}&search=${search || ""}`,
-				);
-				setProducts(res.data?.data);
-				setTotalPages(res.data?.pagination?.totalPages);
-				setLoading(false);
-			};
-			fetchProducts();
-		} catch (error) {
-			if (error instanceof AxiosError) {
-				if (error.response) {
-					// The server responded with a status code outside the 2xx range
-					console.error("Server Error Data:", error.response.data);
-					console.error("Status Code:", error.response.status);
-
-					// Target your API's custom message layout (e.g., { message: "..." })
-					const apiMessage =
-						error.response.data?.message || "Server error occurred";
-					toast.error(`Error: ${apiMessage}`);
-				} else if (error.request) {
-					// The request was made but no response was received (e.g., network down)
-					console.error("No Response Received:", error.request);
-					toast.error("Network error: Couldn't Connect to servers.");
-				} else {
-					// Something happened setting up the request
-					console.error("Request Setup Error:", error.message);
-					toast.error(`Config Error: ${error.message}`);
-				}
-			} else {
-				toast.error("An unexpected error has occurred");
-			}
-			console.error(error);
-		}
-	}, [
-		currentPage,
-		limit,
+	const { data, isLoading, error } = useProducts({
+		limit: limit || 20,
+		page: currentPage,
 		category,
 		minPrice,
 		maxPrice,
-		sortBy,
-		sortDir,
-		search,
-	]);
+		orderBy: sortBy,
+		orderDirection: sortDir || "asc",
+		search: search || "",
+	});
+
+	const products = data?.data;
+	const totalPages = data?.pagination?.totalPages || 1;
+
+	useEffect(() => {
+		if (!error) return;
+
+		if (error instanceof AxiosError) {
+			if (error.response) {
+				const apiMessage =
+					error.response.data?.message || "Server error occurred";
+				toast.error(`Error: ${apiMessage}`);
+			} else if (error.request) {
+				toast.error("Network error: Couldn't Connect to servers.");
+			} else {
+				toast.error(`Config Error: ${error.message}`);
+			}
+		} else {
+			toast.error("An unexpected error has occurred");
+		}
+	}, [error]);
 
 	const pageSelectorList = getPageSelectorList(totalPages, currentPage);
 
@@ -127,9 +109,20 @@ function Products() {
 								"Storage",
 								"Monitor",
 								"Peripherals",
+								"Networking",
+								"Audio",
 							] as string[]
 						}
-						values={["gpu", "cpu", "monitor", "peripherals", "networking", "audio"]}
+						values={[
+							"gpu",
+							"cpu",
+							"ram",
+							"storage",
+							"monitor",
+							"peripherals",
+							"networking",
+							"audio",
+						]}
 						setValue={setCategory}
 					/>
 					<Select
@@ -167,7 +160,7 @@ function Products() {
 				</div>
 			</div>
 			{/* Products */}
-			{loading ? (
+			{isLoading ? (
 				<h1 className="mx-10">Loading...</h1>
 			) : (
 				<ProductList products={products} />

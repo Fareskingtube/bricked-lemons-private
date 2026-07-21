@@ -13,7 +13,7 @@ interface ProductCardProps {
 export function ProductCard({ product, quantity, setCart }: ProductCardProps) {
 	const handleChangeQuantity = (add: boolean) => {
 		const storedCart = localStorage.getItem("cart");
-		let savedCart: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
+		const savedCart: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
 
 		const cartItem = savedCart.find((item) => item.product.id === product.id);
 

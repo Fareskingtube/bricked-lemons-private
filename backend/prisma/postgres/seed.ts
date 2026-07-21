@@ -42,6 +42,21 @@ const categories = [
 	},
 ];
 
+// keys for seeded images
+// Upload them to your bucket at products/"your-image-name"
+const nvidiaGPUImage = "what-is-a-gpu-770x462.jpg"
+const AMDGPUImage = "AMD-GPU.jpg"
+const AMDCPUImage = "cpu-amd-ryzen-9-9950x-box-am5-without-fan.jpg"
+const IntelCPUImage = "61iMaYoZ0sL._AC_UF894,1000_QL80_.jpg"
+const RAMImage = "ram.jpg"
+const SSDImage = "71OWtcxKgvL.jpg"
+const HDDImage = "61EzYF3znjL.jpg"
+const monitorImage = "monitor.jpg"
+const mouseImage = "Logitech-G-PRO-X-SUPERLIGHT-Wireless-Gaming-Mouse-Black_c481f5fa-9934-4ed7-94af-29a598bd3b2e.03017ee44c6bb06a233bf23cbdd4f52b.jpeg"
+const keyBoardImage = "akko-tkl-keyboard.jpg"
+const networkingImage = "71luV33389L._AC_SL1500_.jpg"
+const audioImage = "hyperx_cloud_alpha_blackred_1_main_1024x1024.jpg"
+
 const productsBySlug: Record<
 	string,
 	{
@@ -57,7 +72,7 @@ const productsBySlug: Record<
 			name: "NVIDIA GeForce RTX 4090 24GB",
 			price: 1599.99,
 			imageKey:
-				"https://www.hellotech.com/blog/wp-content/uploads/2020/02/what-is-a-gpu-770x462.jpg",
+				`products/${nvidiaGPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -65,7 +80,7 @@ const productsBySlug: Record<
 			name: "NVIDIA GeForce RTX 4080 Super 16GB",
 			price: 999.99,
 			imageKey:
-				"https://www.hellotech.com/blog/wp-content/uploads/2020/02/what-is-a-gpu-770x462.jpg",
+				`products/${nvidiaGPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -73,7 +88,7 @@ const productsBySlug: Record<
 			name: "NVIDIA GeForce RTX 4070 Ti Super 16GB",
 			price: 799.99,
 			imageKey:
-				"https://www.hellotech.com/blog/wp-content/uploads/2020/02/what-is-a-gpu-770x462.jpg",
+				`products/${nvidiaGPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -81,7 +96,7 @@ const productsBySlug: Record<
 			name: "AMD Radeon RX 7900 XTX 24GB",
 			price: 929.99,
 			imageKey:
-				"https://www.hellotech.com/blog/wp-content/uploads/2020/02/what-is-a-gpu-770x462.jpg",
+				`products/${AMDGPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -89,7 +104,7 @@ const productsBySlug: Record<
 			name: "AMD Radeon RX 7800 XT 16GB",
 			price: 499.99,
 			imageKey:
-				"https://www.hellotech.com/blog/wp-content/uploads/2020/02/what-is-a-gpu-770x462.jpg",
+				`products/${AMDGPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -99,7 +114,7 @@ const productsBySlug: Record<
 			name: "AMD Ryzen 7 7800X3D",
 			price: 369.99,
 			imageKey:
-				"https://compuscience.com.eg/23610-home_default/cpu-amd-ryzen-9-9950x-box-am5-without-fan.jpg",
+				`products/${AMDCPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -107,7 +122,7 @@ const productsBySlug: Record<
 			name: "AMD Ryzen 9 7950X",
 			price: 549.99,
 			imageKey:
-				"https://compuscience.com.eg/23610-home_default/cpu-amd-ryzen-9-9950x-box-am5-without-fan.jpg",
+				`products/${AMDCPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -115,7 +130,7 @@ const productsBySlug: Record<
 			name: "Intel Core i9-14900K",
 			price: 529.99,
 			imageKey:
-				"https://m.media-amazon.com/images/I/61iMaYoZ0sL._AC_UF894,1000_QL80_.jpg",
+				`products/${IntelCPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -123,7 +138,7 @@ const productsBySlug: Record<
 			name: "Intel Core i7-14700K",
 			price: 389.99,
 			imageKey:
-				"https://m.media-amazon.com/images/I/61iMaYoZ0sL._AC_UF894,1000_QL80_.jpg",
+				`products/${IntelCPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -131,7 +146,7 @@ const productsBySlug: Record<
 			name: "Intel Core i5-14600K",
 			price: 299.99,
 			imageKey:
-				"https://m.media-amazon.com/images/I/61iMaYoZ0sL._AC_UF894,1000_QL80_.jpg",
+				`products/${IntelCPUImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -141,7 +156,7 @@ const productsBySlug: Record<
 			name: "Corsair Vengeance RGB DDR5 32GB (2x16GB) 6000MHz",
 			price: 119.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPu0YRDS8D4Mu5NpLmY7eSy8J4QIXgrsGbiogGISTK-eP1XWWUM3jCZE62&s=10",
+				`products/${RAMImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -149,7 +164,7 @@ const productsBySlug: Record<
 			name: "G.Skill Trident Z5 Neo RGB DDR5 64GB (2x32GB) 6000MHz",
 			price: 209.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPu0YRDS8D4Mu5NpLmY7eSy8J4QIXgrsGbiogGISTK-eP1XWWUM3jCZE62&s=10",
+				`products/${RAMImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -157,7 +172,7 @@ const productsBySlug: Record<
 			name: "Teamgroup T-Force Delta RGB DDR5 32GB (2x16GB) 6400MHz",
 			price: 104.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPu0YRDS8D4Mu5NpLmY7eSy8J4QIXgrsGbiogGISTK-eP1XWWUM3jCZE62&s=10",
+				`products/${RAMImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -165,7 +180,7 @@ const productsBySlug: Record<
 			name: "Crucial Pro DDR5 32GB (2x16GB) 5600MHz",
 			price: 89.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPu0YRDS8D4Mu5NpLmY7eSy8J4QIXgrsGbiogGISTK-eP1XWWUM3jCZE62&s=10",
+				`products/${RAMImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -173,7 +188,7 @@ const productsBySlug: Record<
 			name: "Kingston FURY Beast DDR5 16GB (2x8GB) 5200MHz",
 			price: 64.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPu0YRDS8D4Mu5NpLmY7eSy8J4QIXgrsGbiogGISTK-eP1XWWUM3jCZE62&s=10",
+				`products/${RAMImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -182,35 +197,35 @@ const productsBySlug: Record<
 		{
 			name: "Samsung 990 PRO NVMe M.2 SSD 2TB",
 			price: 169.99,
-			imageKey: "https://m.media-amazon.com/images/I/71OWtcxKgvL.jpg",
+			imageKey: `products/${SSDImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
 		{
 			name: "Crucial T700 PCIe 5.0 NVMe M.2 SSD 2TB",
 			price: 249.99,
-			imageKey: "https://m.media-amazon.com/images/I/71OWtcxKgvL.jpg",
+			imageKey: `products/${SSDImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
 		{
 			name: "Western Digital Black SN855X NVMe M.2 SSD 1TB",
 			price: 94.99,
-			imageKey: "https://m.media-amazon.com/images/I/71OWtcxKgvL.jpg",
+			imageKey: `products/${SSDImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
 		{
 			name: "Seagate IronWolf Pro 8TB NAS Internal Hard Drive",
 			price: 199.99,
-			imageKey: "https://m.media-amazon.com/images/I/61EzYF3znjL.jpg",
+			imageKey: `products/${HDDImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
 		{
 			name: "Crucial X9 Pro Portable SSD 2TB",
 			price: 139.99,
-			imageKey: "https://m.media-amazon.com/images/I/71OWtcxKgvL.jpg",
+			imageKey: `products/${SSDImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -220,7 +235,7 @@ const productsBySlug: Record<
 			name: 'ASUS ROG Swift 32" 4K OLED PG32UCDM',
 			price: 1299.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeivlUuxVoXy-e34ymi4wPDPrszaCVZ5pGErkpwMh0gw&s",
+				`products/${monitorImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -228,7 +243,7 @@ const productsBySlug: Record<
 			name: 'Alienware 34" Curved QD-OLED AW3423DWF',
 			price: 799.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeivlUuxVoXy-e34ymi4wPDPrszaCVZ5pGErkpwMh0gw&s",
+				`products/${monitorImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -236,7 +251,7 @@ const productsBySlug: Record<
 			name: 'LG UltraGear 27" QHD IPS 27GP850-B',
 			price: 299.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeivlUuxVoXy-e34ymi4wPDPrszaCVZ5pGErkpwMh0gw&s",
+				`products/${monitorImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -244,7 +259,7 @@ const productsBySlug: Record<
 			name: 'Samsung Odyssey G9 49" Curved Gaming Monitor',
 			price: 1099.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeivlUuxVoXy-e34ymi4wPDPrszaCVZ5pGErkpwMh0gw&s",
+				`products/${monitorImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -252,7 +267,7 @@ const productsBySlug: Record<
 			name: 'Gigabyte M27Q 27" 170Hz KVM Monitor',
 			price: 249.99,
 			imageKey:
-				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeivlUuxVoXy-e34ymi4wPDPrszaCVZ5pGErkpwMh0gw&s",
+				`products/${monitorImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -262,7 +277,7 @@ const productsBySlug: Record<
 			name: "Logitech G Pro X Superlight 2 Gaming Mouse",
 			price: 149.99,
 			imageKey:
-				"https://i5.walmartimages.com/seo/Logitech-G-PRO-X-SUPERLIGHT-Wireless-Gaming-Mouse-Black_c481f5fa-9934-4ed7-94af-29a598bd3b2e.03017ee44c6bb06a233bf23cbdd4f52b.jpeg",
+				`products/${mouseImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -270,7 +285,7 @@ const productsBySlug: Record<
 			name: "Razer DeathAdder V3 Pro Wireless Mouse",
 			price: 139.99,
 			imageKey:
-				"https://i5.walmartimages.com/seo/Logitech-G-PRO-X-SUPERLIGHT-Wireless-Gaming-Mouse-Black_c481f5fa-9934-4ed7-94af-29a598bd3b2e.03017ee44c6bb06a233bf23cbdd4f52b.jpeg",
+				`products/${mouseImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -278,7 +293,7 @@ const productsBySlug: Record<
 			name: "ASUS ROG Azoth Wireless Mechanical Keyboard",
 			price: 249.99,
 			imageKey:
-				"https://i5.walmartimages.com/seo/Logitech-G-PRO-X-SUPERLIGHT-Wireless-Gaming-Mouse-Black_c481f5fa-9934-4ed7-94af-29a598bd3b2e.03017ee44c6bb06a233bf23cbdd4f52b.jpeg",
+				`products/${keyBoardImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -286,7 +301,7 @@ const productsBySlug: Record<
 			name: "Keychron Q1 Pro Custom Mechanical Keyboard",
 			price: 199.99,
 			imageKey:
-				"https://i5.walmartimages.com/seo/Logitech-G-PRO-X-SUPERLIGHT-Wireless-Gaming-Mouse-Black_c481f5fa-9934-4ed7-94af-29a598bd3b2e.03017ee44c6bb06a233bf23cbdd4f52b.jpeg",
+				`products/${keyBoardImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -294,7 +309,7 @@ const productsBySlug: Record<
 			name: "SteelSeries Apex Pro TKL Mechanical Keyboard",
 			price: 179.99,
 			imageKey:
-				"https://i5.walmartimages.com/seo/Logitech-G-PRO-X-SUPERLIGHT-Wireless-Gaming-Mouse-Black_c481f5fa-9934-4ed7-94af-29a598bd3b2e.03017ee44c6bb06a233bf23cbdd4f52b.jpeg",
+				`products/${keyBoardImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -304,7 +319,7 @@ const productsBySlug: Record<
 			name: "ASUS ROG Rapture GT6 Wi-Fi 6E Mesh System",
 			price: 429.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1610018556010-6a11691bc905?w=500&auto=format&fit=crop",
+				`products/${networkingImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -312,7 +327,7 @@ const productsBySlug: Record<
 			name: "Netgear Nighthawk WiFi 7 Router RS700",
 			price: 699.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=500&auto=format&fit=crop",
+				`products/${networkingImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -320,7 +335,7 @@ const productsBySlug: Record<
 			name: "TP-Link Deco AX3000 Whole Home Mesh System",
 			price: 179.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop",
+				`products/${networkingImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -328,7 +343,7 @@ const productsBySlug: Record<
 			name: "Ubiquiti UniFi Dream Machine Professional",
 			price: 379.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1600132806608-231446b2e7af?w=500&auto=format&fit=crop",
+				`products/${networkingImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -336,7 +351,7 @@ const productsBySlug: Record<
 			name: "Netgear 8-Port Gigabit Ethernet Unmanaged Switch",
 			price: 29.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&auto=format&fit=crop",
+				`products/${networkingImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -346,7 +361,7 @@ const productsBySlug: Record<
 			name: "SteelSeries Arctis Nova Pro Wireless Headset",
 			price: 349.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500&auto=format&fit=crop",
+				`products/${audioImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -354,7 +369,7 @@ const productsBySlug: Record<
 			name: "HyperX Cloud Alpha Wireless Gaming Headset",
 			price: 169.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=500&auto=format&fit=crop",
+				`products/${audioImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -362,7 +377,7 @@ const productsBySlug: Record<
 			name: "Audio-Technica ATH-M50x Professional Studio Headphones",
 			price: 149.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop",
+				`products/${audioImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -370,7 +385,7 @@ const productsBySlug: Record<
 			name: "Shure SM7B Vocal Microphone",
 			price: 399.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=500&auto=format&fit=crop",
+				`products/${audioImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},
@@ -378,7 +393,7 @@ const productsBySlug: Record<
 			name: "Rodecaster Pro II Audio Production Studio",
 			price: 699.99,
 			imageKey:
-				"https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=500&auto=format&fit=crop",
+				`products/${audioImage}`,
 			reviewRating: 0,
 			reviewCount: 0,
 		},

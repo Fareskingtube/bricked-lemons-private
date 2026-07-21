@@ -293,7 +293,7 @@ export const changUserRole = async (req: Request, res: Response) => {
 
 	try {
 		// Get user role
-		const role = Boolean(isAdmin) ? "ADMIN" : "USER";
+		const role = isAdmin ? "ADMIN" : "USER";
 
 		// Updating user
 		await prismaPg.user.update({

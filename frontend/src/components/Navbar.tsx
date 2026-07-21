@@ -4,11 +4,11 @@ import { BiSearchAlt2 } from "react-icons/bi";
 import { BiChevronDown } from "react-icons/bi";
 import { Link, useNavigate } from "react-router-dom";
 import Dropdown from "./Dropdown";
-import { useContext, useState } from "react";
-import { UserContext } from "../App";
+import { useState } from "react";
+import { useUser } from "../hooks/UseUser";
 
 function Navbar() {
-	const userContext = useContext(UserContext);
+	const { user, fetchUser } = useUser();
 
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -63,19 +63,26 @@ function Navbar() {
 						<BiSearchAlt2 className="text-2xl text-secondary-500" />
 					</div>
 					<Dropdown
-						user={userContext?.user ?? null}
+						user={user ?? null}
 						isOpen={isOpen}
 						handleToggle={handleToggleDropdown}
-						setUser={userContext?.setUser ?? (() => {})}
+						fetchUser={fetchUser}
 					>
 						<button
 							onClick={handleToggleDropdown}
 							className="rounded-4xl flex items-center gap-1 text-text-900"
 						>
-							<AiOutlineUser className="text-3xl" />
-							<span>
-								{userContext?.user ? userContext.user?.username : "Account"}
-							</span>
+							{user?.imageUrl ? (
+								<img
+									src={user?.imageUrl}
+									alt="Profile Image"
+									className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-md"
+								/>
+							) : (
+								<AiOutlineUser className="text-3xl" />
+							)}
+
+							<span>{user ? user?.username : "Account"}</span>
 						</button>
 					</Dropdown>
 					<Link to="/cart" className="rounded-4xl text-text-900 mr-2 ">
