@@ -42,6 +42,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 			};
 			setUser(fetchedUser);
 		} catch (error: unknown) {
+			console.error("Failed to fetch current user:", error);
 			setUser(null);
 		} finally {
 			setLoading(false);
@@ -66,6 +67,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 				setUser(fetchedUser);
 			} catch (error: unknown) {
 				if (!isMounted) return;
+				console.error("Failed to fetch current user:", error);
 				setUser(null);
 			} finally {
 				if (isMounted) setLoading(false);

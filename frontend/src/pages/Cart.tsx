@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { ProductCard } from "../components/ProductCard";
-import { Link } from "react-router-dom";
 import { usePostOrder, type CartItem } from "../hooks/UseOrder";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";

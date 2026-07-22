@@ -1,9 +1,10 @@
+import { UserInfo } from "../components/UserInfo";
 import { CgClose } from "react-icons/cg";
 import { AiOutlineUpload } from "react-icons/ai";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/UseUser";
-import { AiOutlineUser } from "react-icons/ai";
+
 import toast from "react-hot-toast";
 import { useUpdatePassword, useUpdateUser } from "../hooks/UseUpdateUser";
 import { AxiosError } from "axios";
@@ -32,7 +33,7 @@ function Profile() {
 			newPassword: "",
 			confirmPassword: "",
 		});
-        fetchUser()
+		fetchUser();
 	};
 
 	const {
@@ -59,11 +60,9 @@ function Profile() {
 
 		if (isSuccess) {
 			toast.success("User updated successfully");
-			resetFields()
 		}
 		if (isPasswordSuccess) {
-            toast.success("Password changed successfully");
-            resetFields()
+			toast.success("Password changed successfully");
 		}
 		if (updateUserError) {
 			if (updateUserError instanceof AxiosError) {
@@ -132,7 +131,7 @@ function Profile() {
 			navigate("/login");
 			toast.error("Please log in to view this page");
 		}
-	}, [user, loading]);
+	}, [user, loading, navigate]);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -151,6 +150,7 @@ function Profile() {
 			username: userForum.username ?? undefined,
 			email: userForum.email ?? undefined,
 		});
+		resetFields();
 	};
 
 	const handlePasswordSubmit = (e: React.SubmitEvent) => {
@@ -172,6 +172,7 @@ function Profile() {
 			currentPassword: passwordForum.currentPassword,
 			newPassword: passwordForum.newPassword,
 		});
+		resetFields();
 	};
 
 	const previewUrl = useMemo(() => {
@@ -187,33 +188,12 @@ function Profile() {
 
 	return (
 		<div className="grid grid-cols-[1fr_3fr] gap-4 w-screen mb-10">
-			<div className="grid grid-rows-[1fr_3fr] gap-10 bg-background-100 ml-2 mt-2 pt-8 rounded-2xl pr-4">
-				<div className="flex flex-col items-center justify-center gap-4">
-					{user?.imageUrl ? (
-						<img
-							src={user?.imageUrl}
-							alt="Profile Image"
-							className="w-24 h-24 rounded-full object-cover border-2 border-white shadow-md"
-						/>
-					) : (
-						<AiOutlineUser className="text-6xl text-text-950 rounded-full bg-background-300 w-24 h-24" />
-					)}
-					<h2 className="text-primary-500">{user?.username}</h2>
-				</div>
-				<div className="flex flex-col gap-2 pl-4">
-					<h3>
-						Username: <br />{" "}
-						<span className="ml-2 text-primary-500">{user?.username}</span>
-					</h3>
-					<h3>
-						Email: <br /> <span className="ml-2 font-bold">{user?.email}</span>
-					</h3>
-					<h3>
-						Role: <br />{" "}
-						<span className="ml-2 text-secondary-500">{user?.role}</span>
-					</h3>
-				</div>
-			</div>
+			<UserInfo
+				imageUrl={user?.imageUrl}
+				username={user?.username}
+				email={user?.email}
+				role={user?.role}
+			/>
 			<div className="flex flex-col bg-background-100 mr-8 mt-2 pt-8 px-5 rounded-2xl gap-10">
 				<form onSubmit={handleUserSubmit} className="flex flex-col gap-10 pb-5">
 					<h1>Update User</h1>
@@ -253,7 +233,7 @@ function Profile() {
 						<input
 							type="text"
 							placeholder="username"
-                            value={userForum.username}
+							value={userForum.username}
 							onChange={(e) => {
 								setUserForum({ ...userForum, username: e.target.value });
 							}}
@@ -266,7 +246,7 @@ function Profile() {
 						<input
 							type="text"
 							placeholder="example@example.com"
-                            value={userForum.email}
+							value={userForum.email}
 							onChange={(e) => {
 								setUserForum({ ...userForum, email: e.target.value });
 							}}
@@ -299,7 +279,7 @@ function Profile() {
 						<input
 							type="password"
 							placeholder="current password"
-                            value={passwordForum.currentPassword}
+							value={passwordForum.currentPassword}
 							onChange={(e) => {
 								setPasswordForum({
 									...passwordForum,
@@ -315,7 +295,7 @@ function Profile() {
 						<input
 							type="password"
 							placeholder="old password"
-                            value={passwordForum.newPassword}
+							value={passwordForum.newPassword}
 							onChange={(e) => {
 								setPasswordForum({
 									...passwordForum,
@@ -331,7 +311,7 @@ function Profile() {
 						<input
 							type="password"
 							placeholder="confirm password"
-                            value={passwordForum.confirmPassword}
+							value={passwordForum.confirmPassword}
 							onChange={(e) => {
 								setPasswordForum({
 									...passwordForum,

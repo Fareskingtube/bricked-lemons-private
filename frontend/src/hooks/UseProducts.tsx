@@ -30,10 +30,10 @@ async function fetchProductById(id: string) {
 	return res.data;
 }
 
-export function useProductById(id: string) {
+export function useProductById(id: string | undefined) {
 	return useQuery({
 		queryKey: ["productById", id],
-		queryFn: () => fetchProductById(id),
+		queryFn: () => fetchProductById(id as string),
 		placeholderData: keepPreviousData,
 	});
 }

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import type { Product } from "./Products";
 import toast from "react-hot-toast";
 import renderStars from "../util/renderStarts";
-import type { CartItem } from "./Cart";
+import type { CartItem } from "../hooks/UseOrder";
 import { useProductById } from "../hooks/UseProducts";
 
 function ProductItem() {
@@ -12,14 +12,8 @@ function ProductItem() {
 
 	const [currentImage, setCurrentImage] = useState(0);
 
-	const navigate = useNavigate();
-	if (!id) {
-		navigate("/products", { replace: true });
-		toast.error("Product doesn't exist");
-		return;
-	}
-
 	const { data, error } = useProductById(id);
+
 
 	const product: Product = data?.data;
 

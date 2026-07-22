@@ -11,6 +11,7 @@ import { UserProvider } from "./hooks/UseUser";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ function App() {
 						<Route path="/products/search/:search" element={<Products />} />
 						<Route path="/cart" element={<Cart />} />
 						<Route path="/profile" element={<Profile />} />
+						<Route path="/admin" element={<Admin />} />
 					</Routes>
 					{/* TODO: Remove */}
 					{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" /> */}
