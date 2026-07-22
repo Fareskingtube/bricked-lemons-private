@@ -1,4 +1,9 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+	useQuery,
+	keepPreviousData,
+	useQueryClient,
+	useMutation,
+} from "@tanstack/react-query";
 import api from "../config/axios";
 
 interface ProductsParams {
@@ -10,6 +15,13 @@ interface ProductsParams {
 	orderBy: string;
 	orderDirection: string;
 	search: string;
+}
+interface CreateProductParams {
+	name: string;
+	description: string;
+	price: number;
+	category: string;
+	images?: File[];
 }
 
 async function fetchProducts(params: ProductsParams) {
@@ -35,5 +47,39 @@ export function useProductById(id: string | undefined) {
 		queryKey: ["productById", id],
 		queryFn: () => fetchProductById(id as string),
 		placeholderData: keepPreviousData,
+	});
+}
+
+async function createProduct(params: CreateProductParams) {
+	const formData = new FormData();
+
+	formData.append("name", params.name);
+	formData.append("description", params.description);
+	formData.append("price", String(params.price));
+	formData.append("category", params.category);
+
+	if (params.images) {
+		params.images.forEach((image) => {
+			formData.append("image", image);
+		});
+	}
+
+	const { data } = await api.post("/products/", formData, {
+		headers: {
+			"Content-Type": "multipart/form-data",
+		},
+	});
+
+	return data;
+}
+
+export function useCreateProduct() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: createProduct,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["products"] });
+		},
 	});
 }

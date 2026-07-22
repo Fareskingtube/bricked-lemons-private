@@ -14,11 +14,10 @@ function ProductItem() {
 
 	const { data, error } = useProductById(id);
 
-
 	const product: Product = data?.data;
 
 	useEffect(() => {
-		if (!error) return
+		if (!error) return;
 		if (error instanceof AxiosError) {
 			if (error.response) {
 				// The server responded with a status code outside the 2xx range

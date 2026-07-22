@@ -31,7 +31,6 @@ const updateUser = async ({ file, username, email }: UpdateUserParams) => {
 		headers: {
 			"Content-Type": "multipart/form-data",
 		},
-		withCredentials: true,
 	});
 
 	return data;
@@ -43,9 +42,7 @@ interface UpdatePasswordParams {
 }
 
 const updatePassword = async ({ currentPassword, newPassword }: UpdatePasswordParams) => {
-	const { data } = await api.put("auth/me/password", {currentPassword, newPassword}, {
-		withCredentials: true,
-	});
+	const { data } = await api.put("auth/me/password", {currentPassword, newPassword});
     return data
 };
 
@@ -69,3 +66,4 @@ export const useUpdatePassword = () => {
 		},
 	});
 };
+
