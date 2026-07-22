@@ -6,11 +6,16 @@ import toast from "react-hot-toast";
 import renderStars from "../util/renderStarts";
 import type { CartItem } from "../hooks/UseOrder";
 import { useProductById } from "../hooks/UseProducts";
+import { useUser } from "../hooks/UseUser";
+import StarRatingInput from "../components/InputStarRating";
 
 function ProductItem() {
 	const { id } = useParams();
+	const { user } = useUser();
 
 	const [currentImage, setCurrentImage] = useState(0);
+	const [rating, setRating] = useState(0);
+	const [review, setReview] = useState("");
 
 	const { data, error } = useProductById(id);
 
@@ -135,6 +140,33 @@ function ProductItem() {
 				<h3>Description:</h3>
 				<p>{product?.description}</p>
 			</div>
+			<form className="flex flex-col gap-5">
+				<h1>Reviews</h1>
+				<div className="flex flex-col gap-3 w-fit bg-background-100 p-5 rounded-2xl">
+					<h2>Write a review</h2>
+					<h3 className="ml-1 -mb-3">{user?.username}</h3>
+					<StarRatingInput value={rating} onChange={setRating} />
+					<textarea
+						placeholder="Write a review..."
+						className="w-[40vw] h-[15vh] max-w-90 bg-background-200 focus:bg-background-300 outline-none ring-0 text-text-900 
+                        placeholder:opacity-25 placeholder:text-text-800 p-3 rounded-xl"
+						value={review}
+						onChange={(e) => setReview(e.target.value)}
+					/>
+
+					<button
+						className="px-3 py-2.5 rounded-xl bg-linear-to-br from-secondary-400 
+                        dark:from-secondary-600 to-accent-500 transition-transform duration-100 ease-in-out 
+                        hover:scale-101 not-sm:self-center shadow shadow-black/30
+                        active:scale-100"
+						type="submit"
+					>
+						<h3 className="dark:text-text-100 text-text-900 font-bold">
+							Post Review
+						</h3>
+					</button>
+				</div>
+			</form>
 		</div>
 	) : (
 		<h1>Loading...</h1>

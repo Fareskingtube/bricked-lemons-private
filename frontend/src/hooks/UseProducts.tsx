@@ -47,6 +47,7 @@ export function useProductById(id: string | undefined) {
 		queryKey: ["productById", id],
 		queryFn: () => fetchProductById(id as string),
 		placeholderData: keepPreviousData,
+		enabled: !!id,
 	});
 }
 

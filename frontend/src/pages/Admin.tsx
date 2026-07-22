@@ -9,7 +9,7 @@ import { AiOutlineUpload } from "react-icons/ai";
 import { useCreateProduct } from "../hooks/UseProducts";
 
 function Admin() {
-	const { user, loading } = useUser();
+	const { user, fetchUser, loading } = useUser();
 	const [selectedFiles, setSelectedFiles] = useState<File[] | null>(null);
 	const [productForum, setProductForum] = useState({
 		name: "",
@@ -21,6 +21,22 @@ function Admin() {
 		makeAdmin: "",
 		removeAdmin: "",
 	});
+
+	const resetFields = () => {
+		setSelectedFiles(null);
+		setProductForum({
+			name: "",
+			price: 0,
+			category: "",
+			description: "",
+		});
+
+		setUserManagementForum({
+			makeAdmin: "",
+			removeAdmin: "",
+		});
+		fetchUser();
+	};
 
 	const navigate = useNavigate();
 
@@ -133,7 +149,6 @@ function Admin() {
 		if (selectedFiles && selectedFiles.length === 0) {
 			toast.success("Images Saved");
 		}
-		
 	}, [selectedFiles]);
 
 	const handleChangeRole = (email: string, isAdmin: boolean) => {
@@ -147,6 +162,7 @@ function Admin() {
 		}
 
 		changeRole({ email, isAdmin });
+		resetFields();
 	};
 
 	const handleProductSubmit = (e: React.SubmitEvent) => {
@@ -171,6 +187,7 @@ function Admin() {
 			category: productForum.category,
 			images: selectedFiles,
 		});
+		resetFields();
 	};
 
 	return (
