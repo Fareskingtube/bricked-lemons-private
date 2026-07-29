@@ -153,3 +153,22 @@ Now if you open up `http://localhost:5173/` You should see the home page and tha
 
 - PostgreSQL: `http://localhost:5433` (In docker container port is `5432`)
 - MongoDB: `http://localhost:27017`
+
+## Deployment
+### Live site: [You can visit here](https://bricked-lemons-private.vercel.app/)
+### Platforms used:
+- [Vercel](https://vercel.com/) for frontend and backend deployment
+- [Atlas](https://www.mongodb.com/products/platform/atlas-database) for MongoDB database
+- [Neon](https://neon.com/) for PostgreSQL database
+
+## AI usage
+AI was usage was limited to only helping debugging and wasn't used majorly at all **Except** for the following:
+
+1. Writing tests at `backend/tests/` for integration and unit tests
+1. Helped majorly in `backend/endpoint.sh`
+1. Making the helper function `frontend/src/util/pageSelectorHelper.ts`
+1. Helped write the monstrosity that is `Lines 11-13` at `backend/Dockerfile`
+1. Seed data for PostgreSQL database at `backend/prisma/postgres/seed.ts`
+1. Writing the `vercel.json` for vercel deployment
+
+### Any borrowed code has it's sources stated above it

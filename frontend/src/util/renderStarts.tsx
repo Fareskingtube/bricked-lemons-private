@@ -1,5 +1,7 @@
 import { FaStarHalfAlt, FaStar, FaRegStar } from "react-icons/fa";
 
+// Function stolen from myself and made typescript: https://github.com/Fareskingtube/runny-bunny/blob/main/src/utils/renderStars.jsx 
+
 export default function renderStars(rating: number) {
 	const stars = [];
 	const totalStars = 5;

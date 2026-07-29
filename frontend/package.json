@@ -4,7 +4,7 @@
 	"version": "1.0.0",
 	"license": "LGPL-2.1",
 	"author": "Fareskingtube",
-	"repository": "github:Fareskingtube/bricked-lemons",
+	"repository": "github:Fareskingtube/bricked-lemons-private",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
