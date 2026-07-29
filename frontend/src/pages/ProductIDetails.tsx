@@ -8,6 +8,7 @@ import type { CartItem } from "../hooks/UseOrder";
 import { useProductById } from "../hooks/UseProducts";
 import { useUser } from "../hooks/UseUser";
 import StarRatingInput from "../components/InputStarRating";
+import { useCreateReview } from "../hooks/UseReview";
 
 function ProductItem() {
 	const { id } = useParams();
@@ -83,6 +84,67 @@ function ProductItem() {
 		localStorage.setItem("cart", JSON.stringify([...savedCart, newCartItem]));
 	};
 
+	const {
+		mutate: createReview,
+		isSuccess,
+		isPending,
+		error: reviewError,
+	} = useCreateReview(id);
+
+	useEffect(() => {
+		if (isPending) {
+			return;
+		}
+
+		if (isSuccess) {
+			toast.success("Review created successfully");
+		}
+
+		if (reviewError) {
+			if (reviewError instanceof AxiosError) {
+				if (reviewError.response) {
+					// The server responded with a status code outside the 2xx range
+					console.error("Server Error Data:", reviewError.response.data);
+					console.error("Status Code:", reviewError.response.status);
+
+					// Target your API's custom message layout (e.g., { message: "..." })
+					const apiMessage =
+						reviewError.response.data?.message || "Server error occurred";
+					toast.error(`Error: ${apiMessage}`);
+				} else if (reviewError.request) {
+					// The request was made but no response was received (e.g., network down)
+					console.error("No Response Received:", reviewError.request);
+					toast.error("Network error: Couldn't Connect to servers.");
+				} else {
+					// Something happened setting up the request
+					console.error("Request Setup Error:", reviewError.message);
+					toast.error(`Config Error: ${reviewError.message}`);
+				}
+			} else {
+				toast.error("An unexpected error has occurred");
+			}
+		}
+	}, [reviewError, isSuccess, isPending]);
+
+	const resetFields = () => {
+		setRating(0);
+		setReview("");
+	};
+
+	const handleReviewSubmit = (e: React.SubmitEvent) => {
+		e.preventDefault();
+		if (!review) {
+			toast.error("Review is empty");
+			return;
+		}
+		createReview({
+			id: id ?? "",
+			comment: review,
+			rating: rating,
+		});
+		resetFields()
+	};
+
 	return product ? (
 		<div className="flex flex-col gap-10 w-screen p-10 pl-5 mt-5">
 			<div className="flex gap-5">
@@ -140,7 +202,7 @@ function ProductItem() {
 				<h3>Description:</h3>
 				<p>{product?.description}</p>
 			</div>
-			<form className="flex flex-col gap-5">
+			<form className="flex flex-col gap-5" onSubmit={handleReviewSubmit}>
 				<h1>Reviews</h1>
 				<div className="flex flex-col gap-3 w-fit bg-background-100 p-5 rounded-2xl">
 					<h2>Write a review</h2>
@@ -167,6 +229,14 @@ function ProductItem() {
 					</button>
 				</div>
 			</form>
+			<div className="w-screen h-[40vh] self-center px-10">
+				<div
+					className="h-full flex justify-center items-center
+				bg-red-500/50 rounded-4xl border-4 border-red-600"
+				>
+					<h2>Displaying all reviews under construction</h2>
+				</div>
+			</div>
 		</div>
 	) : (
 		<h1>Loading...</h1>

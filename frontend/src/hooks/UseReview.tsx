@@ -25,8 +25,9 @@ async function fetchProducts(params: fetchReviewsParams) {
 }
 
 export function useProducts(params: fetchReviewsParams) {
+	const { id, ...rest } = params;
 	return useQuery({
-		queryKey: ["reviews", params],
+		queryKey: ["reviews", id, rest],
 		queryFn: () => fetchProducts(params),
 		placeholderData: keepPreviousData,
 	});
@@ -47,6 +48,7 @@ export function useCreateReview(id: string | undefined) {
 		mutationFn: createReview,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["reviews", id] });
+			queryClient.invalidateQueries({ queryKey: ["productById", id] });
 		},
 	});
 }
