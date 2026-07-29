@@ -1,5 +1,5 @@
 import { AiOutlineMinusCircle, AiOutlinePlusCircle } from "react-icons/ai";
-import type { CartItem } from "../pages/Cart";
+import type { CartItem } from "../hooks/UseOrder";
 import type { Product } from "../pages/Products";
 import renderStars from "../util/renderStarts";
 import { Link } from "react-router-dom";
