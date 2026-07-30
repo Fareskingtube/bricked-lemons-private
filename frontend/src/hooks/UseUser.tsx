@@ -7,6 +7,8 @@ import {
 	type ReactNode,
 } from "react";
 import api from "../config/axios";
+import { AxiosError } from "axios";
+import Cookies from "js-cookie";
 
 export interface User {
 	id: string;
@@ -21,6 +23,7 @@ interface UserContextType {
 	setUser: (user: User | null) => void;
 	loading: boolean;
 	fetchUser: () => Promise<void>;
+	logout: () => Promise<void>
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -41,19 +44,29 @@ export function UserProvider({ children }: { children: ReactNode }) {
 				imageUrl: res.data?.imageUrl,
 			};
 			setUser(fetchedUser);
-		} catch (error: unknown) {
-			console.error("Failed to fetch current user:", error);
-			setUser(null);
+		} catch (error) {
+			if (error instanceof AxiosError && error.response?.status === 401) {
+				setUser(null);
+			} else {
+				console.error("Unexpected auth check error", error);
+				setUser(null);
+			}
 		} finally {
 			setLoading(false);
 		}
 	}, []);
 
+	const logout = useCallback(async () => {
+		await api.post("/auth/logout");
+		setUser(null);
+	}, []);
+
 	useEffect(() => {
 		let isMounted = true;
-
+		const isLoggedIn = Cookies.get("isLoggedIn") === "true";
 		const checkSession = async () => {
 			try {
+				if (!isLoggedIn) return;
 				const res = await api.get("/auth/me");
 				if (!isMounted) return;
 
@@ -65,10 +78,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
 					imageUrl: res.data?.imageUrl,
 				};
 				setUser(fetchedUser);
-			} catch (error: unknown) {
+			} catch (error) {
 				if (!isMounted) return;
-				console.error("Failed to fetch current user:", error);
-				setUser(null);
+				if (error instanceof AxiosError && error.response?.status === 401) {
+					setUser(null);
+				} else {
+					console.error("Unexpected auth check error", error);
+					setUser(null);
+				}
 			} finally {
 				if (isMounted) setLoading(false);
 			}
@@ -82,7 +99,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	return (
-		<UserContext.Provider value={{ user, setUser, loading, fetchUser }}>
+		<UserContext.Provider value={{ user, setUser, loading, fetchUser, logout }}>
 			{children}
 		</UserContext.Provider>
 	);

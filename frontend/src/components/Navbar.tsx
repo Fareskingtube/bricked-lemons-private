@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useUser } from "../hooks/UseUser";
 
 function Navbar() {
-	const { user, fetchUser } = useUser();
+	const { user, logout } = useUser();
 
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -66,7 +66,7 @@ function Navbar() {
 						user={user ?? null}
 						isOpen={isOpen}
 						handleToggle={handleToggleDropdown}
-						fetchUser={fetchUser}
+						logout={logout}
 					>
 						<button
 							onClick={handleToggleDropdown}

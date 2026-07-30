@@ -29,10 +29,16 @@ async function getUserWithImageUrl(user: SafeUser): Promise<UserWithImageUrl> {
 }
 
 // I use HTTP only cookies I AM SUPERIOR
-const cookieOptions: CookieOptions = {
+const tokenCookieOptions: CookieOptions = {
 	httpOnly: true,
 	secure: process.env.NODE_ENV === "production",
 	sameSite: "strict",
+	maxAge: 30 * 86400000, // 30 Days
+};
+const loggedInCookieOptions: CookieOptions = {
+	httpOnly: false,
+	secure: process.env.NODE_ENV === "production",
+	sameSite: "lax",
 	maxAge: 30 * 86400000, // 30 Days
 };
 
@@ -77,7 +83,8 @@ export const register = async (req: Request, res: Response) => {
 
 		const token = generateToken(newUser.id, newUser.role);
 
-		res.cookie("token", token, cookieOptions);
+		res.cookie("token", token, tokenCookieOptions);
+		res.cookie("isLoggedIn", "true", loggedInCookieOptions);
 
 		// Sending Email
 		transport.sendMail({
@@ -127,7 +134,8 @@ export const login = async (req: Request, res: Response) => {
 
 		const token = generateToken(user.id, user.role);
 
-		res.cookie("token", token, cookieOptions);
+		res.cookie("token", token, tokenCookieOptions);
+		res.cookie("isLoggedIn", "true", loggedInCookieOptions);
 
 		// Creating Safe User
 		const { password: extractedPassword, ...safeUser } = user;
@@ -146,18 +154,16 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = async (req: Request, res: Response) => {
-	res.cookie("token", "", { ...cookieOptions, maxAge: 1 });
+	res.cookie("token", "", { ...tokenCookieOptions, maxAge: 1 });
+	res.cookie("isLoggedIn", "false", loggedInCookieOptions);
 	return res.status(200).json({ message: "Logged out in successfully" });
-	// Return user info from protect middleware
 };
 
 export const getProfile = async (req: Request, res: Response) => {
 	const user = req.user;
 	if (!user) return res.status(401).json({ error: "Not authenticated" });
-	console.log(user);
 
 	const userWithImageUrl = await getUserWithImageUrl(user);
-	console.log(userWithImageUrl);
 
 	res.status(200).json(userWithImageUrl);
 };

@@ -8,7 +8,7 @@ import type { User } from "../hooks/UseUser";
 interface DropdownProps {
 	isOpen: boolean;
 	user: User | null;
-	fetchUser: () => void;
+	logout: () => void;
 	handleToggle: () => void;
 }
 
@@ -16,14 +16,14 @@ function Dropdown({
 	user,
 	isOpen,
 	handleToggle,
-	fetchUser,
+	logout,
 	children,
 }: PropsWithChildren<DropdownProps>) {
 	const navigate = useNavigate();
 	const handleLogout = async () => {
 		try {
 			await api.post("/auth/logout");
-			fetchUser();
+			logout();
 			handleToggle();
 			navigate("/", { replace: true });
 			toast.success("Logged out successfully");
