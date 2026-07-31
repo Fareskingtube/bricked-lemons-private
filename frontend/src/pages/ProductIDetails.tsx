@@ -103,6 +103,10 @@ function ProductItem() {
 		if (reviewError) {
 			if (reviewError instanceof AxiosError) {
 				if (reviewError.response) {
+					if (reviewError.response?.status === 401) {
+						toast.error("Please login to write a review");
+						return;
+					}
 					// The server responded with a status code outside the 2xx range
 					console.error("Server Error Data:", reviewError.response.data);
 					console.error("Status Code:", reviewError.response.status);
@@ -142,7 +146,7 @@ function ProductItem() {
 			comment: review,
 			rating: rating,
 		});
-		resetFields()
+		resetFields();
 	};
 
 	return product ? (

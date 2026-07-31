@@ -29,42 +29,43 @@ function Cart() {
 		postOrder({ CartItems: cart });
 	};
 
-
 	useEffect(() => {
-		
 		if (isPending) {
-			return
-        }
-        
-        
+			return;
+		}
+
 		if (isSuccess) {
 			toast.success("Order created successfully");
 		}
-		
+
 		if (error) {
-            if (error instanceof AxiosError) {
-                if (error.response) {
-                    // The server responded with a status code outside the 2xx range
+			if (error instanceof AxiosError) {
+				if (error.response) {
+					if (error.response?.status === 401) {
+						toast.error("Please login to place your order");
+						return;
+					}
+					// The server responded with a status code outside the 2xx range
 					console.error("Server Error Data:", error.response.data);
 					console.error("Status Code:", error.response.status);
-                    
+
 					// Target your API's custom message layout (e.g., { message: "..." })
 					const apiMessage =
-                    error.response.data?.message || "Server error occurred";
+						error.response.data?.message || "Server error occurred";
 					toast.error(`Error: ${apiMessage}`);
 				} else if (error.request) {
-                    // The request was made but no response was received (e.g., network down)
+					// The request was made but no response was received (e.g., network down)
 					console.error("No Response Received:", error.request);
 					toast.error("Network error: Couldn't Connect to servers.");
 				} else {
-                    // Something happened setting up the request
+					// Something happened setting up the request
 					console.error("Request Setup Error:", error.message);
 					toast.error(`Config Error: ${error.message}`);
 				}
 			} else {
-                toast.error("An unexpected error has occurred");
+				toast.error("An unexpected error has occurred");
 			}
-        }
+		}
 	}, [error, isSuccess, isPending]);
 
 	return (
