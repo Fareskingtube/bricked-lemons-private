@@ -94,13 +94,15 @@ export const addToCart = async (req: Request, res: Response) => {
 };
 
 export const updateCartItem = async (req: Request, res: Response) => {
-	const { productId, add } = req.body;
+	const { productId } = req.body;
 	const userId = req.user?.id;
+
+	const add = req.body.add === "true";
 
 	if (!userId) {
 		return res.status(401).json({ message: "Invalid User ID please login" });
 	}
-	if (!productId || !add) {
+	if (!productId || !req.body.add) {
 		return res
 			.status(401)
 			.json({ message: "Invalid or missing field(s) please try again" });
@@ -111,6 +113,7 @@ export const updateCartItem = async (req: Request, res: Response) => {
 				productId,
 				cart: { userId },
 			},
+			include: { product: { select: { price: true } } },
 		});
 
 		if (!cartItem) {
@@ -127,6 +130,18 @@ export const updateCartItem = async (req: Request, res: Response) => {
 			where: { id: cartItem.id },
 			data: { quantity: { [add ? "increment" : "decrement"]: 1 } },
 		});
+
+		await prismaPg.cart.update({
+			where: { id: cartItem.cartId },
+			data: {
+				totalAmount: {
+					[add ? "increment" : "decrement"]:
+						cartItem.product.price,
+				},
+			},
+			include: { items: true },
+		});
+
 		return res
 			.status(200)
 			.json({ message: "Item updated successfully", cartItem: newCartItem });
@@ -155,6 +170,7 @@ export const removeFromCart = async (req: Request, res: Response) => {
 				productId,
 				cart: { userId },
 			},
+			include: { product: { select: { price: true } } },
 		});
 
 		if (!cartItem) {
@@ -163,6 +179,16 @@ export const removeFromCart = async (req: Request, res: Response) => {
 
 		await prismaPg.cartItem.delete({
 			where: { id: cartItem.id },
+		});
+
+		await prismaPg.cart.update({
+			where: { id: cartItem.cartId },
+			data: {
+				totalAmount: {
+					decrement: cartItem.product.price * cartItem.quantity,
+				},
+			},
+			include: { items: true },
 		});
 
 		return res.status(200).json({ message: "Item deleted successfully" });
