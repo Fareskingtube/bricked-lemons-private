@@ -33,7 +33,7 @@ export const createOrder = async (req: Request, res: Response) => {
 
 		if (products.length !== productIds.length) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ message: "One or more products not found" });
 		}
 

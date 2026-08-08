@@ -99,7 +99,7 @@ describe("Order Controller - createOrder", () => {
 
 		await createOrder(req as Request, res as Response);
 
-		expect(statusMock).toHaveBeenCalledWith(400);
+		expect(statusMock).toHaveBeenCalledWith(404);
 		expect(jsonMock).toHaveBeenCalledWith({
 			message: "One or more products not found",
 		});
