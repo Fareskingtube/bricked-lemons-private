@@ -1,17 +1,16 @@
-import {
-	useMutation,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../config/axios";
-import type { CartItem } from "./UseCart";
 
-
-
-async function postOrder(params: CartItem[]) {
-	const res = await api.post("/orders/", { items: params } );
+async function postOrder() {
+	const res = await api.post("/orders/");
 	return res.data;
 }
 export const usePostOrder = () => {
+	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: postOrder,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["cart"] });
+		},
 	});
 };
