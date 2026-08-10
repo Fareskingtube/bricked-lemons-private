@@ -11,11 +11,20 @@ import { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { useProducts } from "../hooks/UseProducts";
 
+interface Category {
+	id: string
+	name: string
+	slug: string
+	description: string
+	createdAt: string
+	updatedAt: string
+}
+
 export interface Product {
 	id: string;
 	name: string;
 	price: number;
-	category: string;
+	category: Category;
 	imageKeys: string[];
 	imageUrls: string[];
 	description: string;

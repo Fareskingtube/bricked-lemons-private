@@ -1,74 +1,60 @@
 import { AiOutlineMinusCircle, AiOutlinePlusCircle } from "react-icons/ai";
-import type { CartItem } from "../hooks/UseOrder";
 import type { Product } from "../pages/Products";
 import renderStars from "../util/renderStarts";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAddCart, useDeleteCart, useUpdateCart } from "../hooks/UseCart";
+import { useUser } from "../hooks/UseUser";
+import toast from "react-hot-toast";
 
 interface ProductCardProps {
 	product: Product;
 	quantity?: number;
-	setCart?: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }
 
-export function ProductCard({ product, quantity, setCart }: ProductCardProps) {
-	const handleChangeQuantity = (add: boolean) => {
-		const storedCart = localStorage.getItem("cart");
-		const savedCart: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
+export function ProductCard({ product, quantity }: ProductCardProps) {
+	const { user, loading } = useUser();
 
-		const cartItem = savedCart.find((item) => item.product.id === product.id);
+	const { mutate: addCart } = useAddCart();
 
-		if (!cartItem) return;
-		if (add) {
-			cartItem.quantity += 1;
-		} else {
-			if (cartItem.quantity - 1 <= 0) {
-				handleRemoveCart();
-				return;
-			}
-			cartItem.quantity -= 1;
-		}
+	const navigate = useNavigate();
 
-		localStorage.setItem("cart", JSON.stringify(savedCart));
+	const { mutate: updateCart } = useUpdateCart();
 
-		if (!setCart) return;
-		setCart(savedCart);
+	const handleAddQuantity = (add: boolean) => {
+		updateCart({ productId: product.id, add });
 	};
 
 	const handleAddCart = () => {
-		const storedCart = localStorage.getItem("cart");
-
-		const savedCart: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
-
-		const cartItemExists = savedCart.find(
-			(item) => item.product.id === product.id,
-		);
-
-		if (cartItemExists) {
-			handleChangeQuantity(true);
+		if (loading) {
+			toast.loading("User is loading please try again later", {
+				duration: 4000,
+			});
+			return;
+		}
+		if (!user) {
+			navigate("/login");
+			toast.error("Please log in to use the cart");
 			return;
 		}
 
-		const newCartItem: CartItem = {
-			product: product,
-			quantity: 1,
-		};
+		const toastId = toast.loading("Adding to cart...");
 
-		localStorage.setItem("cart", JSON.stringify([...savedCart, newCartItem]));
-	};
-
-	const handleRemoveCart = () => {
-		const storedCart = localStorage.getItem("cart");
-
-		const savedCart: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
-
-		const newCart = savedCart.filter(
-			(filterProduct) => filterProduct.product.id !== product.id,
+		addCart(
+			{ productId: product.id },
+			{
+				onSuccess: () => {
+					toast.success("Added to cart successfully", { id: toastId });
+				},
+				onError: (error) => {
+					toast.error("Failed to add item to cart", { id: toastId });
+					console.log(error);
+				},
+			},
 		);
-
-		localStorage.setItem("cart", JSON.stringify(newCart));
-
-		if (!setCart) return;
-		setCart(newCart);
+	};
+	const { mutate: deleteCart } = useDeleteCart();
+	const handleRemoveCart = () => {
+		deleteCart({ productId: product.id });
 	};
 
 	return (
@@ -124,7 +110,7 @@ export function ProductCard({ product, quantity, setCart }: ProductCardProps) {
 							<AiOutlineMinusCircle
 								onClick={(e) => {
 									e.preventDefault();
-									handleChangeQuantity(false);
+									handleAddQuantity(false);
 								}}
 							/>
 						</button>
@@ -133,7 +119,7 @@ export function ProductCard({ product, quantity, setCart }: ProductCardProps) {
 							className="cursor-pointer"
 							onClick={(e) => {
 								e.preventDefault();
-								handleChangeQuantity(true);
+								handleAddQuantity(true);
 							}}
 						>
 							<AiOutlinePlusCircle />
