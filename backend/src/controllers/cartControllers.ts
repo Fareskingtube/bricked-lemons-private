@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prismaPg } from "../config/dbs.ts";
+import { getProductWithImageUrl } from "../util/getProductWithImageUrl.ts";
 
 export const getCart = async (req: Request, res: Response) => {
 	const userId = req.user?.id;
@@ -10,9 +11,28 @@ export const getCart = async (req: Request, res: Response) => {
 	try {
 		const cart = await prismaPg.cart.findFirst({
 			where: { userId },
-			include: { items: true },
+			include: {
+				items: { include: { product: true } },
+			},
 		});
-		return res.status(200).json(cart);
+
+		if (!cart) {
+			return res
+				.status(404)
+				.json({ message: "Cart not found try adding an item to it" });
+		}
+
+		const formattedCart = {
+			...cart,
+			items: await Promise.all(
+				cart.items.map(async (item) => ({
+					...item,
+					product: await getProductWithImageUrl(item.product), // your existing function
+				})),
+			),
+		};
+
+		return res.status(200).json(formattedCart);
 	} catch (error) {
 		console.error(error);
 		return res.status(500).json({ message: "Internal server error", error });
@@ -20,7 +40,8 @@ export const getCart = async (req: Request, res: Response) => {
 };
 
 export const addToCart = async (req: Request, res: Response) => {
-	const { productId } = req.body;
+	const { id } = req.params;
+	const productId = id as string;
 	const userId = req.user?.id;
 
 	if (!userId) {
@@ -81,12 +102,28 @@ export const addToCart = async (req: Request, res: Response) => {
 		const updatedCart = await prismaPg.cart.update({
 			where: { id: cart.id },
 			data: { totalAmount },
-			include: { items: true },
+			include: {
+				items: {
+					include: {
+						product: true,
+					},
+				},
+			},
 		});
+
+		const formattedCart = {
+			...cart,
+			items: await Promise.all(
+				updatedCart.items.map(async (item) => ({
+					...item,
+					product: await getProductWithImageUrl(item.product), // your existing function
+				})),
+			),
+		};
 
 		return res
 			.status(201)
-			.json({ message: "Product added successfully", updatedCart });
+			.json({ message: "Product added successfully", formattedCart });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).json({ message: "Internal server error", error });
@@ -94,7 +131,9 @@ export const addToCart = async (req: Request, res: Response) => {
 };
 
 export const updateCartItem = async (req: Request, res: Response) => {
-	const { productId } = req.body;
+	const { id } = req.params;
+	const productId = id as string;
+
 	const userId = req.user?.id;
 
 	const add = req.body.add === "true";
@@ -129,22 +168,28 @@ export const updateCartItem = async (req: Request, res: Response) => {
 		const newCartItem = await prismaPg.cartItem.update({
 			where: { id: cartItem.id },
 			data: { quantity: { [add ? "increment" : "decrement"]: 1 } },
+			include: { product: true },
 		});
 
 		await prismaPg.cart.update({
 			where: { id: cartItem.cartId },
 			data: {
 				totalAmount: {
-					[add ? "increment" : "decrement"]:
-						cartItem.product.price,
+					[add ? "increment" : "decrement"]: cartItem.product.price,
 				},
 			},
 			include: { items: true },
 		});
 
-		return res
-			.status(200)
-			.json({ message: "Item updated successfully", cartItem: newCartItem });
+		const formattedCartItem = {
+			...newCartItem,
+			product: await getProductWithImageUrl(newCartItem.product), // your existing function
+		};
+
+		return res.status(200).json({
+			message: "Item updated successfully",
+			cartItem: formattedCartItem,
+		});
 	} catch (error) {
 		console.error(error);
 		return res.status(500).json({ message: "Internal server error", error });
@@ -152,7 +197,8 @@ export const updateCartItem = async (req: Request, res: Response) => {
 };
 
 export const removeFromCart = async (req: Request, res: Response) => {
-	const { productId } = req.body;
+	const { id } = req.params;
+	const productId = id as string;
 	const userId = req.user?.id;
 
 	if (!userId) {

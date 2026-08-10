@@ -1,35 +1,12 @@
 import type { Request, Response } from "express";
 import { prismaMongo, prismaPg } from "../config/dbs.ts";
 import { requireEnv } from "../config/env.ts";
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import path from "path";
 import { r2 } from "../config/r2.ts";
-import type { Prisma, Product } from "../generated/prisma-postgres/index.js";
+import type { Prisma } from "../generated/prisma-postgres/index.js";
 import { PrismaClientKnownRequestError } from "../generated/prisma-mongo/runtime/library.js";
-
-interface ProductWithImageUrl extends Product {
-	imageUrls: (string | null)[];
-}
-
-// Takes Products and returns Product with image keys converted to URLs and added as imageUrl[]
-async function getProductWithImageUrl(
-	product: Product,
-): Promise<ProductWithImageUrl> {
-	const imageUrls = await Promise.all(
-		product.imageKeys
-			.filter((imageKey): imageKey is string => Boolean(imageKey))
-			.map(async (imageKey) => {
-				const command = new GetObjectCommand({
-					Bucket: requireEnv("BUCKET_NAME"),
-					Key: imageKey,
-				});
-				return getSignedUrl(r2, command, { expiresIn: 3600 }); // 1 hour
-			}),
-	);
-
-	return { ...product, imageUrls };
-}
+import { getProductWithImageUrl, type ProductWithImageUrl } from "../util/getProductWithImageUrl.ts";
 
 // function with pagination, filtering, and search queries n stuff
 export const getProducts = async (
@@ -109,6 +86,7 @@ export const getProducts = async (
 				orderBy: orderByClause,
 				skip,
 				take: limitNum,
+				include: {category: true}
 			}),
 			prismaPg.product.count({ where: whereClause }),
 		]);
@@ -153,6 +131,7 @@ export const getProductById = async (
 		}
 		const product = await prismaPg.product.findUnique({
 			where: { id: id as string },
+			include: {category: true}
 		});
 
 		if (!product) {

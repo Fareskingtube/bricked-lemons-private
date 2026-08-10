@@ -6,9 +6,11 @@ import { Link, useNavigate } from "react-router-dom";
 import Dropdown from "./Dropdown";
 import { useState } from "react";
 import { useUser } from "../hooks/UseUser";
+import { useCart } from "../hooks/UseCart";
 
 function Navbar() {
 	const { user, logout } = useUser();
+	const { data: cart } = useCart();
 
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -70,7 +72,7 @@ function Navbar() {
 					>
 						<button
 							onClick={handleToggleDropdown}
-							className="rounded-4xl flex items-center gap-1 text-text-900"
+							className={`rounded-4xl flex items-center gap-1 text-text-900 ${!user && "mr-2"}`}
 						>
 							{user?.imageUrl ? (
 								<img
@@ -85,9 +87,28 @@ function Navbar() {
 							<span>{user ? user?.username : "Account"}</span>
 						</button>
 					</Dropdown>
-					<Link to="/cart" className="rounded-4xl text-text-900 mr-2 ">
-						<BiCart className="text-3xl" />
-					</Link>
+
+					{user && (
+						<Link
+							to="/cart"
+							className="relative rounded-4xl text-text-900 mr-2 "
+						>
+							<BiCart className="text-3xl" />
+							<span className="sr-only">Cart</span>
+							{cart?.items && cart?.items.length !== 0 && (
+								<span className="absolute -top-0.5 -right-1.5 bg-red-500 px-1 rounded-4xl text-xs">
+									{(() => {
+										const totalQuantity = cart.items.reduce(
+											(sum, item) => sum + item.quantity,
+											0,
+										);
+										return totalQuantity > 99 ? "99+" : totalQuantity;
+									})()}
+									<span className="sr-only">Items</span>
+								</span>
+							)}
+						</Link>
+					)}
 				</div>
 			</div>
 			<hr className="w-full border-t-background-100" />
