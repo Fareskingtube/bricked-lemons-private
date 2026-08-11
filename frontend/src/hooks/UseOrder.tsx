@@ -1,16 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import api from "../config/axios";
 
-async function postOrder() {
-	const res = await api.post("/orders/");
-	return res.data;
+async function postCheckout() {
+	const { data } = await api.post("/checkout/session");
+	return data.url as string;
 }
-export const usePostOrder = () => {
-	const queryClient = useQueryClient();
+
+export const usePostCheckout = () => {
 	return useMutation({
-		mutationFn: postOrder,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["cart"] });
+		mutationFn: postCheckout,
+		onSuccess: (url) => {
+			window.location.href = url;
 		},
 	});
 };
