@@ -1,3 +1,4 @@
+// Disabled and replaced with checkout tests
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 import type { Request, Response } from "express";
 
@@ -26,9 +27,9 @@ jest.unstable_mockModule("../config/dbs.js", () => ({
 
 // NOTE: the source file is named `orderControllers.ts` (typo preserved
 // intentionally to match the actual filename used by the router).
-const { createOrder, getOrders } = await import(
-	"../controllers/orderControllers.ts"
-);
+// const { createOrder, getOrders } = await import(
+// 	"../controllers/orderControllers.ts"
+// );
 
 function makeRes() {
 	const jsonMock = jest.fn().mockImplementation(() => ({}) as Response);

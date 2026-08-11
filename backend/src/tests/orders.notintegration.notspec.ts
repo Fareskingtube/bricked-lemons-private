@@ -1,3 +1,4 @@
+// Disabled and replaced with checkout tests
 import {
 	jest,
 	describe,
