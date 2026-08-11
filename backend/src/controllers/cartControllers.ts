@@ -116,7 +116,7 @@ export const addToCart = async (req: Request, res: Response) => {
 			items: await Promise.all(
 				updatedCart.items.map(async (item) => ({
 					...item,
-					product: await getProductWithImageUrl(item.product), // your existing function
+					product: await getProductWithImageUrl(item.product),
 				})),
 			),
 		};
@@ -187,7 +187,7 @@ export const updateCartItem = async (req: Request, res: Response) => {
 
 		const formattedCartItem = {
 			...newCartItem,
-			product: await getProductWithImageUrl(newCartItem.product), // your existing function
+			product: await getProductWithImageUrl(newCartItem.product),
 		};
 
 		return res.status(200).json({
