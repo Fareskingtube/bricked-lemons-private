@@ -1,18 +1,38 @@
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 import type { Request, Response } from "express";
 
-const mockCartFindFirst = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
-const mockCartUpsert = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
-const mockCartUpdate = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
+const mockCartFindFirst = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockCartUpsert = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockCartUpdate = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
 
-const mockCartItemFindMany = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
-const mockCartItemUpsert = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
-const mockCartItemFindFirst = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
-const mockCartItemUpdate = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
-const mockCartItemDelete = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
+const mockCartItemFindMany = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockCartItemUpsert = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockCartItemFindFirst = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockCartItemUpdate = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockCartItemDelete = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
 
-const mockProductFindFirst = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
-const mockGetProductWithImageUrl = jest.fn() as unknown as jest.MockedFunction<(...args: any[]) => Promise<any>>;
+const mockProductFindFirst = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
+const mockGetProductWithImageUrl = jest.fn() as unknown as jest.MockedFunction<
+	(...args: any[]) => Promise<any>
+>;
 
 jest.unstable_mockModule("../config/dbs.js", () => ({
 	__esModule: true,
@@ -40,14 +60,19 @@ jest.unstable_mockModule("../util/getProductWithImageUrl.js", () => ({
 	getProductWithImageUrl: mockGetProductWithImageUrl,
 }));
 
-const { getCart, addToCart, updateCartItem, removeFromCart } = await import(
-	"../controllers/cartControllers.ts"
-);
+const { getCart, addToCart, updateCartItem, removeFromCart } =
+	await import("../controllers/cartControllers.ts");
 
 function makeRes() {
 	const jsonMock = jest.fn().mockImplementation(() => ({}) as Response);
-	const statusMock = jest.fn().mockImplementation(() => ({ json: jsonMock }) as any);
-	return { res: { status: statusMock } as Partial<Response>, jsonMock, statusMock };
+	const statusMock = jest
+		.fn()
+		.mockImplementation(() => ({ json: jsonMock }) as any);
+	return {
+		res: { status: statusMock } as Partial<Response>,
+		jsonMock,
+		statusMock,
+	};
 }
 
 const mockDecimal = (val: number) => ({
@@ -56,7 +81,7 @@ const mockDecimal = (val: number) => ({
 		valueOf: () => val * qty,
 	}),
 	toNumber: () => val,
-	valueOf: () => val, 
+	valueOf: () => val,
 });
 
 describe("el cart controller", () => {
@@ -99,28 +124,45 @@ describe("el cart controller", () => {
 			const mockCart = {
 				id: mockCartId,
 				userId: mockUserId,
-				items: [{ id: mockItemId, productId: mockProductId, quantity: 2, product: mockProduct }],
+				items: [
+					{
+						id: mockItemId,
+						productId: mockProductId,
+						quantity: 2,
+						product: mockProduct,
+					},
+				],
 			};
-			mockCartFindFirst.mockResolvedValue(mockCart);
-			mockGetProductWithImageUrl.mockResolvedValue({ ...mockProduct, imageUrls: ["img.jpg"] });
+			mockCartUpsert.mockResolvedValue(mockCart);
+			mockGetProductWithImageUrl.mockResolvedValue({
+				...mockProduct,
+				imageUrls: ["img.jpg"],
+			});
 
 			await getCart(req as Request, res as Response);
 
-			expect(mockCartFindFirst).toHaveBeenCalledWith({
+			expect(mockCartUpsert).toHaveBeenCalledWith({
 				where: { userId: mockUserId },
+				create: { userId: mockUserId, totalAmount: 0 },
+				update: {},
 				include: { items: { include: { product: true } } },
 			});
 			expect(statusMock).toHaveBeenCalledWith(200);
 			expect(jsonMock).toHaveBeenCalledWith({
 				...mockCart,
-				items: [{ ...mockCart.items[0], product: { ...mockProduct, imageUrls: ["img.jpg"] } }],
+				items: [
+					{
+						...mockCart.items[0],
+						product: { ...mockProduct, imageUrls: ["img.jpg"] },
+					},
+				],
 			});
 		});
 	});
 
 	describe("addToCart", () => {
 		it("should return 401 if no productId", async () => {
-			req.params.id = "";
+			req.params!.id = "";
 			await addToCart(req as Request, res as Response);
 			expect(statusMock).toHaveBeenCalledWith(401);
 		});
@@ -134,16 +176,28 @@ describe("el cart controller", () => {
 		it("should return 201 and add to cart successfully", async () => {
 			const mockProduct = { id: mockProductId, price: mockPrice };
 			mockProductFindFirst.mockResolvedValue(mockProduct);
-			mockCartItemFindMany.mockResolvedValue([{ price: mockPrice, quantity: 2 }]);
+			mockCartItemFindMany.mockResolvedValue([
+				{ price: mockPrice, quantity: 2 },
+			]);
 			mockCartUpsert.mockResolvedValue({ id: mockCartId, userId: mockUserId });
 			mockCartItemUpsert.mockResolvedValue({});
-			
+
 			const updatedCart = {
 				id: mockCartId,
-				items: [{ id: mockItemId, productId: mockProductId, quantity: 2, product: mockProduct }],
+				items: [
+					{
+						id: mockItemId,
+						productId: mockProductId,
+						quantity: 2,
+						product: mockProduct,
+					},
+				],
 			};
 			mockCartUpdate.mockResolvedValue(updatedCart);
-			mockGetProductWithImageUrl.mockResolvedValue({ ...mockProduct, imageUrls: [] });
+			mockGetProductWithImageUrl.mockResolvedValue({
+				...mockProduct,
+				imageUrls: [],
+			});
 
 			await addToCart(req as Request, res as Response);
 
@@ -153,9 +207,16 @@ describe("el cart controller", () => {
 				create: { userId: mockUserId, totalAmount: 0 },
 			});
 			expect(mockCartItemUpsert).toHaveBeenCalledWith({
-				where: { cartId_productId: { cartId: mockCartId, productId: mockProductId } },
+				where: {
+					cartId_productId: { cartId: mockCartId, productId: mockProductId },
+				},
 				update: { quantity: { increment: 1 } },
-				create: { cartId: mockCartId, price: mockPrice, productId: mockProductId, quantity: 1 },
+				create: {
+					cartId: mockCartId,
+					price: mockPrice,
+					productId: mockProductId,
+					quantity: 1,
+				},
 			});
 			expect(mockCartUpdate).toHaveBeenCalledWith({
 				where: { id: mockCartId },
@@ -180,13 +241,20 @@ describe("el cart controller", () => {
 		it("should increment quantity and totalAmount successfully", async () => {
 			const mockProduct = { price: mockPrice };
 			const mockCartItem = {
-				id: mockItemId, cartId: mockCartId, productId: mockProductId,
-				quantity: 2, price: mockPrice, product: mockProduct,
+				id: mockItemId,
+				cartId: mockCartId,
+				productId: mockProductId,
+				quantity: 2,
+				price: mockPrice,
+				product: mockProduct,
 			};
 			mockCartItemFindFirst.mockResolvedValue(mockCartItem);
 			mockCartItemUpdate.mockResolvedValue({ ...mockCartItem, quantity: 3 });
 			mockCartUpdate.mockResolvedValue({});
-			mockGetProductWithImageUrl.mockResolvedValue({ ...mockProduct, imageUrls: [] });
+			mockGetProductWithImageUrl.mockResolvedValue({
+				...mockProduct,
+				imageUrls: [],
+			});
 
 			await updateCartItem(req as Request, res as Response);
 
@@ -207,8 +275,12 @@ describe("el cart controller", () => {
 			req.body = { add: "false" };
 			const mockProduct = { price: mockPrice };
 			const mockCartItem = {
-				id: mockItemId, cartId: mockCartId, productId: mockProductId,
-				quantity: 1, price: mockPrice, product: mockProduct,
+				id: mockItemId,
+				cartId: mockCartId,
+				productId: mockProductId,
+				quantity: 1,
+				price: mockPrice,
+				product: mockProduct,
 			};
 			mockCartItemFindFirst.mockResolvedValue(mockCartItem);
 			mockCartUpdate.mockResolvedValue({});
@@ -223,7 +295,9 @@ describe("el cart controller", () => {
 				},
 			});
 			expect(statusMock).toHaveBeenCalledWith(200);
-			expect(jsonMock).toHaveBeenCalledWith({ message: "Product deleted successfully" });
+			expect(jsonMock).toHaveBeenCalledWith({
+				message: "Product deleted successfully",
+			});
 		});
 	});
 
@@ -231,8 +305,11 @@ describe("el cart controller", () => {
 		it("should delete item and decrement totalAmount", async () => {
 			const mockProduct = { price: mockPrice };
 			const mockCartItem = {
-				id: mockItemId, cartId: mockCartId, productId: mockProductId,
-				quantity: 2, product: mockProduct,
+				id: mockItemId,
+				cartId: mockCartId,
+				productId: mockProductId,
+				quantity: 2,
+				product: mockProduct,
 			};
 			mockCartItemFindFirst.mockResolvedValue(mockCartItem);
 			mockCartItemDelete.mockResolvedValue({});
@@ -240,11 +317,13 @@ describe("el cart controller", () => {
 
 			await removeFromCart(req as Request, res as Response);
 
-			expect(mockCartItemDelete).toHaveBeenCalledWith({ where: { id: mockItemId } });
+			expect(mockCartItemDelete).toHaveBeenCalledWith({
+				where: { id: mockItemId },
+			});
 			expect(mockCartUpdate).toHaveBeenCalledWith({
 				where: { id: mockCartId },
 				data: {
-					totalAmount: { decrement: 20 }, 
+					totalAmount: { decrement: 20 },
 				},
 				include: { items: true },
 			});

@@ -15,7 +15,9 @@ import { useCart } from "../hooks/UseCart";
 
 function Navbar() {
 	const { user, logout } = useUser();
-	const { data: cart } = useCart();
+	const { data: cart } = useCart({
+		enabled: !!user,
+	});
 
 	const [isOpen, setIsOpen] = useState(false);
 

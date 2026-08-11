@@ -9,8 +9,10 @@ export const getCart = async (req: Request, res: Response) => {
 		return res.status(401).json({ message: "Invalid User ID please login" });
 	}
 	try {
-		const cart = await prismaPg.cart.findFirst({
+		const cart = await prismaPg.cart.upsert({
 			where: { userId },
+			create: { userId, totalAmount: 0 },
+			update: {},
 			include: {
 				items: { include: { product: true } },
 			},

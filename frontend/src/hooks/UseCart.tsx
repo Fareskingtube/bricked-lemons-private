@@ -48,7 +48,10 @@ export function useAddCart() {
 
 async function updateCart(params: updateCartParams) {
 	const { productId, add } = params;
-	const { data } = await api.put(`/cart/${params.productId}`, { productId, add: String(add) });
+	const { data } = await api.put(`/cart/${params.productId}`, {
+		productId,
+		add: String(add),
+	});
 	return data;
 }
 
@@ -83,14 +86,17 @@ async function fetchCart() {
 	return data;
 }
 
-export function useCart() {
+export function useCart(options?: { enabled?: boolean }) {
 	return useQuery({
 		queryKey: ["cart"],
 		queryFn: fetchCart,
 		placeholderData: keepPreviousData,
 		select: (data) => ({
 			...data,
-			items: [...data.items].sort((a, b) => a.product.name.localeCompare(b.product.name)),
+			items: [...data.items].sort((a, b) =>
+				a.product.name.localeCompare(b.product.name),
+			),
 		}),
+		enabled: options?.enabled ?? true,
 	});
 }
