@@ -116,7 +116,7 @@ export const addToCart = async (req: Request, res: Response) => {
 			items: await Promise.all(
 				updatedCart.items.map(async (item) => ({
 					...item,
-					product: await getProductWithImageUrl(item.product), // your existing function
+					product: await getProductWithImageUrl(item.product),
 				})),
 			),
 		};
@@ -160,8 +160,12 @@ export const updateCartItem = async (req: Request, res: Response) => {
 		}
 
 		if (cartItem?.quantity - 1 <= 0 && !add) {
-			await prismaPg.cartItem.delete({
-				where: { id: cartItem.id },
+			await prismaPg.cart.update({
+				where: { id: cartItem.cartId },
+				data: {
+					totalAmount: { decrement: cartItem.price.mul(cartItem.quantity) },
+					items: { delete: { id: cartItem.id } },
+				},
 			});
 			return res.status(200).json({ message: "Product deleted successfully" });
 		}
@@ -183,7 +187,7 @@ export const updateCartItem = async (req: Request, res: Response) => {
 
 		const formattedCartItem = {
 			...newCartItem,
-			product: await getProductWithImageUrl(newCartItem.product), // your existing function
+			product: await getProductWithImageUrl(newCartItem.product),
 		};
 
 		return res.status(200).json({

@@ -4,6 +4,8 @@ import ProductRouter from "./routes/productsRouter.js";
 import AuthRouter from "./routes/authRouter.js";
 import OrderRouter from "./routes/orderRoutes.ts";
 import CartRouter from "./routes/cartRoute.ts";
+import CheckoutRouter from "./routes/checkoutRouter.ts";
+import WebhookRouter from "./routes/webhookRoutes.ts";
 import { connectDBs, disconnectDBs } from "./config/dbs.ts";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -11,9 +13,6 @@ import cors from "cors";
 const app = express();
 
 dotenv.config();
-
-app.use(express.json());
-app.use(cookieParser());
 
 const CORS_ORIGIN = process.env.FRONTEND_URL || "http://localhost:5173/";
 
@@ -24,12 +23,19 @@ app.use(
 	}),
 );
 
+app.use("/api/webhooks/", WebhookRouter);
+
+app.use(express.json());
+
+app.use(cookieParser());
+
 const PORT = process.env.PORT || 5000;
 
 app.use("/api/products", ProductRouter);
 app.use("/api/auth", AuthRouter);
 app.use("/api/orders", OrderRouter);
 app.use("/api/cart", CartRouter);
+app.use("/api/checkout", CheckoutRouter);
 
 let server: ReturnType<typeof app.listen>;
 

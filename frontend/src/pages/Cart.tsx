@@ -4,8 +4,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/UseUser";
 import { useCart } from "../hooks/UseCart";
-import { usePostOrder } from "../hooks/UseOrder";
-import { AxiosError } from "axios";
+import { usePostCheckout } from "../hooks/UseCheckout";
 
 function Cart() {
 	const { user, loading } = useUser();
@@ -20,8 +19,7 @@ function Cart() {
 		}
 	}, [user, loading, navigate]);
 
-	// TODO: change up order system
-	const { mutate: postOrder } = usePostOrder();
+	const { mutate: postCheckout, isPending } = usePostCheckout();
 
 	const handleCreateOrder = () => {
 		if (!cart || cart.items.length === 0) {
@@ -40,44 +38,16 @@ function Cart() {
 			return;
 		}
 
-		const toastId = toast.loading("Creating order...");
+		const toastId = toast.loading("Redirecting to checkout...");
 
-		postOrder(undefined, {
-			onSuccess: () => {
-				toast.success("Order created successfully", { id: toastId });
-			},
+		postCheckout(undefined, {
 			onError: (error) => {
-				if (error instanceof AxiosError) {
-					if (error.response) {
-						if (error.response?.status === 401) {
-							toast.error("Please login to place your order", { id: toastId });
-							return;
-						}
-						// The server responded with a status code outside the 2xx range
-						console.error("Server Error Data:", error.response.data);
-						console.error("Status Code:", error.response.status);
-
-						// Target your API's custom message layout (e.g., { message: "..." })
-						const apiMessage =
-							error.response.data?.message || "Server error occurred";
-						toast.error(`Error: ${apiMessage}`, { id: toastId });
-					} else if (error.request) {
-						// The request was made but no response was received (e.g., network down)
-						console.error("No Response Received:", error.request);
-						toast.error("Network error: Couldn't Connect to servers.", { id: toastId });
-					} else {
-						// Something happened setting up the request
-						console.error("Request Setup Error:", error.message);
-						toast.error(`Config Error: ${error.message}`, { id: toastId });
-					}
-				} else {
-					toast.error("An unexpected error has occurred", { id: toastId });
-				}
+				toast.error("Couldn't start checkout", {id: toastId})
 				console.log(error);
-			},
-		});
-	};
+			}
+		})
 
+	};
 
 	return (
 		<div className="w-screen h-screen mt-10">
@@ -109,6 +79,7 @@ function Cart() {
 					</div>
 					<button
 						onClick={handleCreateOrder}
+						disabled={isPending}
 						className="w-fit p-3 rounded-2xl mt-4 mb-1 bg-primary-500 hover:bg-primary-600 transition-colors duration-100 "
 					>
 						<span className="font-bold dark:text-accent-100 text-accent-900">

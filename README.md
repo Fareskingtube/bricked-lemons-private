@@ -25,6 +25,20 @@
 
 - Docker (For standardizing the project environment and setting up a postgreSQL database)
 
+
+# Payment
+## Test Payment Credentials **(For Reviewers/Testers only)**
+### Card Information
+- Card number: `4242 4242 4242 4242`
+- Expiration date: `12/34`
+- CVC: `123` (any 3/4 digit number)
+### Card Holder Name
+- Full name on card: `Testy McTesterson` (any name)
+### Billing address
+- Any Address Should work
+- Postal Code: `12345` (any 5 digit number)
+
+
 ## Setup
 
 ### Via Docker **(Recommended)**
@@ -35,6 +49,7 @@
 - Have [Docker](https://www.docker.com/get-started/) installed
 - A Gmail address with **app** password ([Get from Here](https://nodejs.org/https://myaccount.google.com/apppasswords))
 - [Cloudflare R2 Bucket](#cloudflare-r2-bucket-setup)
+- Have a [Stripe](https://stripe.com/) Account
 
 #### **Quick Start:**
 
@@ -67,6 +82,7 @@ Now if you open up `http://localhost:5173/` You should see the home page and tha
 - [Cloudflare R2 Bucket](#cloudflare-r2-bucket-setup)
 - [PostgreSQL](https://www.postgresql.org/) Database (**Local** or **Remote**)
 - [MongoDB](https://www.mongodb.com/) Database (**Local** or **[Remote](https://www.mongodb.com/products/platform/atlas-database)**)
+- Have a [Stripe](https://stripe.com/) Account
 
 Run:
 
@@ -132,12 +148,14 @@ Same as account in `backend/.example.env`
 ## AI usage
 AI was usage was limited to only helping debugging and wasn't used majorly at all **Except** for the following:
 
-1. Writing tests at `backend/tests/` for integration and unit tests
+1. Writing tests at `backend/src/tests/` for integration and unit tests
 1. Helped majorly in `backend/endpoint.sh`
 1. Making the helper function `frontend/src/util/pageSelectorHelper.ts`
 1. Helped write the monstrosity that is `Lines 11-13` at `backend/Dockerfile`
 1. Seed data for PostgreSQL database at `backend/prisma/postgres/seed.ts`
 1. Writing the `vercel.json` for vercel deployment
+1. Helped a lot in making of the `handleStripeWebhook` at  `backend/src/controllers/webhookControllers` (Only web hook logic not order creation logic)
+1. Writing 2 Small prisma calls in `backend/src/controller/checkoutControllers/createCheckoutSession` around `Line 32` for making a stripeCustomerId
 
 ### Any borrowed code has it's sources stated clearly above it
 

@@ -18,10 +18,24 @@ export function ProductCard({ product, quantity }: ProductCardProps) {
 
 	const navigate = useNavigate();
 
-	const { mutate: updateCart } = useUpdateCart();
+	const { mutate: updateCart, isPending: isUpdatePending } = useUpdateCart();
 
 	const handleAddQuantity = (add: boolean) => {
-		updateCart({ productId: product.id, add });
+		if (isUpdatePending) return;
+		const toastId = toast.loading("Changing item quantity...");
+
+		updateCart(
+			{ productId: product.id, add },
+			{
+				onSuccess: () => {
+					toast.success("Updated item quantity successfully", { id: toastId });
+				},
+				onError: (error) => {
+					toast.error("Failed to update item quantity", { id: toastId });
+					console.log(error);
+				},
+			},
+		);
 	};
 
 	const handleAddCart = () => {
@@ -52,9 +66,22 @@ export function ProductCard({ product, quantity }: ProductCardProps) {
 			},
 		);
 	};
-	const { mutate: deleteCart } = useDeleteCart();
+	const { mutate: deleteCart, isPending: isDeletePending } = useDeleteCart();
 	const handleRemoveCart = () => {
-		deleteCart({ productId: product.id });
+		const toastId = toast.loading("Removing from cart...");
+
+		deleteCart(
+			{ productId: product.id },
+			{
+				onSuccess: () => {
+					toast.success("Removed from cart successfully", { id: toastId });
+				},
+				onError: (error) => {
+					toast.error("Failed to remove item from cart", { id: toastId });
+					console.log(error);
+				},
+			},
+		);
 	};
 
 	return (
@@ -100,19 +127,22 @@ export function ProductCard({ product, quantity }: ProductCardProps) {
 							e.preventDefault();
 							handleRemoveCart();
 						}}
+						disabled={isDeletePending}
 					>
 						<span className="font-bold dark:text-accent-100 text-accent-900">
 							Remove
 						</span>
 					</button>
 					<div className="flex items-center gap-2 text-2xl text-text-900">
-						<button className="cursor-pointer">
-							<AiOutlineMinusCircle
-								onClick={(e) => {
-									e.preventDefault();
-									handleAddQuantity(false);
-								}}
-							/>
+						<button
+							className="cursor-pointer"
+							onClick={(e) => {
+								e.preventDefault();
+								handleAddQuantity(false);
+							}}
+							disabled={isUpdatePending}
+						>
+							<AiOutlineMinusCircle />
 						</button>
 						<span>{quantity}</span>
 						<button
@@ -121,6 +151,7 @@ export function ProductCard({ product, quantity }: ProductCardProps) {
 								e.preventDefault();
 								handleAddQuantity(true);
 							}}
+							disabled={isUpdatePending}
 						>
 							<AiOutlinePlusCircle />
 						</button>

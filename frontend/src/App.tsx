@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import WorkInProgress from "./pages/WorkInProgress";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ function App() {
 						<Route path="/cart" element={<Cart />} />
 						<Route path="/profile" element={<Profile />} />
 						<Route path="/admin" element={<Admin />} />
+						<Route path="/payment/success" element={<PaymentSuccess />} />
 						<Route path="/deals" element={<WorkInProgress />} />
 						<Route path="/new" element={<WorkInProgress />} />
 					</Routes>

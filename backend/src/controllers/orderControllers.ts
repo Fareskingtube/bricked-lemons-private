@@ -1,16 +1,7 @@
 import type { Request, Response } from "express";
-import type { Product } from "../generated/prisma-postgres/index.js";
 import { prismaPg } from "../config/dbs.ts";
 
-interface CreateOrderItemInput {
-	product: Product;
-	quantity: number;
-}
-
-interface CreateOrderInput {
-	items: CreateOrderItemInput[];
-}
-
+// Dead code replaced by ./webhookController/handleStripeWebhook (route disabled)
 export const createOrder = async (req: Request, res: Response) => {
 	const userId = req.user?.id;
 
