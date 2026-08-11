@@ -29,7 +29,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 			return res.status(400).json({ error: "Missing required metadata" });
 		}
 
-        // Order creation logic taken from ./orderController.ts written by MintyEcho
+		// Order creation logic taken from ./orderController.ts written by MintyEcho
 		try {
 			const cart = await prismaPg.cart.findFirst({
 				where: { userId },
@@ -87,4 +87,5 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 			return res.status(500).json({ message: "Internal server error", error });
 		}
 	}
+	return res.json({ received: true });
 };

@@ -93,7 +93,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 			},
 		});
 
-		res.status(200).json({
+		return res.status(200).json({
 			message: "Checkout session created successfully",
 			id: session.id,
 			url: session.url,

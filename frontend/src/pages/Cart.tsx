@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/UseUser";
 import { useCart } from "../hooks/UseCart";
-import { usePostCheckout } from "../hooks/UseOrder";
+import { usePostCheckout } from "../hooks/UseCheckout";
 
 function Cart() {
 	const { user, loading } = useUser();
