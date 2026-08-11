@@ -32,8 +32,6 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 		// This is a SCGF (Small Claude Generated Function)
 		let stripeCustomerId = user.stripeCustomerId;
 
-		console.log("stripeCustomerId: " + stripeCustomerId);
-
 		if (!stripeCustomerId) {
 			const customer = await stripe.customers.create({
 				name: user.username,

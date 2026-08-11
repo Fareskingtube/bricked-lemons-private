@@ -95,7 +95,7 @@ function ProductItem() {
 			toast.error("Review is empty");
 			return;
 		}
-		const toastId = toast.loading("Creating review");
+		const toastId = toast.loading("Creating review..");
 		createReview(
 			{
 				id: id ?? "",
