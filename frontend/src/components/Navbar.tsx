@@ -2,7 +2,7 @@ import { BiCart } from "react-icons/bi";
 import { AiOutlineUser } from "react-icons/ai";
 import { BiSearchAlt2 } from "react-icons/bi";
 import { BiChevronDown } from "react-icons/bi";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Dropdown from "./Dropdown";
 import { useState } from "react";
 import { useUser } from "../hooks/UseUser";
@@ -17,15 +17,23 @@ function Navbar() {
 	};
 
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
 			const search = e.currentTarget.value;
-			if (!search) {
-				navigate("/products");
-				return;
+			const params = new URLSearchParams(
+				location.pathname === "/products" ? location.search : "",
+			);
+
+			if (search.trim() === "") {
+				params.delete("search");
+			} else {
+				params.set("search", search);
 			}
-			navigate(`/products/search/${search}`);
+			params.delete("currentPage");
+
+			navigate(`/products?${params.toString()}`);
 		}
 	};
 

@@ -3,9 +3,9 @@ import { BiChevronLeft } from "react-icons/bi";
 import { BiLastPage } from "react-icons/bi";
 import { BiFirstPage } from "react-icons/bi";
 import { Select } from "../components/Select";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect } from "react";
 import ProductList from "../components/ProductList";
-import { Link, useParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import getPageSelectorList from "../util/pageSelectorHelper";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -25,16 +25,27 @@ export interface Product {
 }
 
 function Products() {
-	const [currentPage, setCurrentPage] = useState(1);
+	const [searchParams, setSearchParams] = useSearchParams();
 
-	const [limit, setLimit] = useState(20);
-	const [maxPrice, setMaxPrice] = useState<number | string>("");
-	const [minPrice, setMinPrice] = useState<number | string>("");
-	const [category, setCategory] = useState("");
-	const [sortBy, setSortBy] = useState("");
-	const [sortDir, setSortDir] = useState("");
+	const currentPage = Number(searchParams.get("currentPage")) || 1;
+	const limit = Number(searchParams.get("limit")) || 20;
+	const maxPrice = searchParams.get("maxPrice") ?? "";
+	const minPrice = searchParams.get("minPrice") ?? "";
+	const category = searchParams.get("category") ?? "";
+	const sortBy = searchParams.get("orderBy") ?? "";
+	const sortDir = searchParams.get("orderDirection") ?? "";
+	const search = searchParams.get("search") ?? "";
 
-	const { search } = useParams();
+	const updateParams = (updates: Record<string, string | number | null>) => {
+		setSearchParams((prev) => {
+			const next = new URLSearchParams(prev);
+			Object.entries(updates).forEach(([key, value]) => {
+				if (value === null || value === "") next.delete(key);
+				else next.set(key, String(value));
+			});
+			return next;
+		});
+	};
 
 	const { data, isLoading, error } = useProducts({
 		limit: limit || 20,
@@ -108,6 +119,7 @@ function Products() {
 				<div className="flex gap-5">
 					<Select
 						name="Category"
+						slug="category"
 						options={
 							[
 								"GPU",
@@ -130,39 +142,44 @@ function Products() {
 							"networking",
 							"audio",
 						]}
-						setValue={setCategory}
+						updateParams={updateParams}
 					/>
 					<Select
 						name="Limit"
+						slug="limit"
 						options={[5, 10, 20, 30, 50, 100] as number[]}
-						setValue={setLimit}
+						updateParams={updateParams}
 					/>
 					<Select
 						name="Min Price"
+						slug="minPrice"
 						options={[10, 100, 200, 300, 400, 500, 800, 1000, 1200] as number[]}
 						values={[9, 99, 199, 299, 399, 499, 799, 999, 1199] as number[]}
-						setValue={setMinPrice as Dispatch<SetStateAction<number>>}
+						updateParams={updateParams}
 					/>
 					<Select
 						name="Max Price"
+						slug="maxPrice"
 						options={
 							[30, 100, 200, 300, 400, 500, 800, 1000, 1200, 1600] as number[]
 						}
-						setValue={setMaxPrice as Dispatch<SetStateAction<number>>}
+						updateParams={updateParams}
 					/>
 				</div>
 				<div className="flex gap-5">
 					<Select
 						name="Sort Direction"
+						slug="orderDirection"
 						options={["Ascending", "Descending"] as string[]}
 						values={["asc", "desc"]}
-						setValue={setSortDir}
+						updateParams={updateParams}
 					/>
 					<Select
 						name="Sort By"
+						slug="orderBy"
 						options={["Recent", "Price", "Rating", "Name"] as string[]}
 						values={["createdAt", "price", "reviewRating", "name"] as string[]}
-						setValue={setSortBy}
+						updateParams={updateParams}
 					/>
 				</div>
 			</div>
@@ -176,13 +193,15 @@ function Products() {
 			<div className="flex justify-center items-center h-[10vh] -mt-10">
 				<button
 					className="hover:cursor-pointer"
-					onClick={() => setCurrentPage(1)}
+					onClick={() => updateParams({ currentPage: 1 })}
 				>
 					<BiFirstPage className="text-accent-900 hover:text-accent-700 text-4xl" />
 				</button>
 				<button
 					className="hover:cursor-pointer"
-					onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+					onClick={() =>
+						updateParams({ currentPage: Math.max(currentPage - 1, 1) })
+					}
 				>
 					<BiChevronLeft className="text-accent-900 hover:text-accent-700 text-4xl" />
 				</button>
@@ -190,7 +209,7 @@ function Products() {
 					{pageSelectorList.map((num) => (
 						<button
 							className="hover:cursor-pointer"
-							onClick={() => setCurrentPage(num)}
+							onClick={() => updateParams({ currentPage: num })}
 							key={num}
 						>
 							<span
@@ -203,13 +222,15 @@ function Products() {
 				</div>
 				<button
 					className="hover:cursor-pointer"
-					onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+					onClick={() =>
+						updateParams({ currentPage: Math.min(totalPages, currentPage + 1) })
+					}
 				>
 					<BiChevronRight className="text-accent-900 hover:text-accent-700 text-4xl" />
 				</button>
 				<button
 					className="hover:cursor-pointer"
-					onClick={() => setCurrentPage(totalPages)}
+					onClick={() => updateParams({ currentPage: totalPages })}
 				>
 					<BiLastPage className="text-accent-900 hover:text-accent-700 text-4xl" />
 				</button>

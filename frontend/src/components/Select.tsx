@@ -1,17 +1,17 @@
-import type { Dispatch } from "react";
-
 interface SelectProps<T extends string | number> {
 	name: string;
+	slug: string;
 	options: T[];
-	setValue: Dispatch<React.SetStateAction<T>>;
+	updateParams: (updates: Record<string, string | number | null>) => void;
 	default?: T;
 	values?: T[];
 }
 
 export function Select<T extends string | number>({
 	name,
+	slug,
 	options,
-	setValue,
+	updateParams,
 	default: defaultValue,
 	values,
 }: SelectProps<T>) {
@@ -28,7 +28,7 @@ export function Select<T extends string | number>({
                     [&::picker-icon]:transition-transform [&:open::picker-icon]:rotate-180
                     dark:bg-accent-900 bg-accent-300 p-1.5 rounded-2xl font-medium px-2.5"
 			onChange={(e) => {
-				setValue(e.target.value as T);
+				updateParams({[slug]: e.target.value as T});
 			}}
 			defaultValue={defaultValue ? defaultValue : ""}
 		>
@@ -36,7 +36,6 @@ export function Select<T extends string | number>({
 				value=""
 				className="[&::checkmark]:hidden dark:checked:bg-accent-700 checked:bg-accent-300 
 					dark:hover:bg-accent-800 hover:bg-accent-200 px-2.5"
-
 			>
 				{name}
 			</option>
