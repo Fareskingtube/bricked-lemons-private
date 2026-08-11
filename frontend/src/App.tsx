@@ -9,7 +9,7 @@ import Cart from "./pages/Cart";
 import ProductItem from "./pages/ProductIDetails";
 import { UserProvider } from "./hooks/UseUser";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import WorkInProgress from "./pages/WorkInProgress";
@@ -37,7 +37,7 @@ function App() {
 						<Route path="/new" element={<WorkInProgress />} />
 					</Routes>
 					{/* TODO: Remove */}
-					{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" /> */}
+					<ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
 				</QueryClientProvider>
 			</BrowserRouter>
 		</UserProvider>

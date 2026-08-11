@@ -1,3 +1,4 @@
+
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 import type { Request, Response } from "express";
 
@@ -184,6 +185,7 @@ describe("Products Controller - getProducts", () => {
 				name: { contains: "Lemon", mode: "insensitive" },
 				category: { slug: "fruit" },
 			},
+			include: {category: true},
 			orderBy: { price: "asc" },
 			skip: 5,
 			take: 5,
@@ -322,7 +324,7 @@ describe("Products Controller - getProductById", () => {
 
 		await getProductById(req as Request, res as Response);
 
-		expect(mockFindUnique).toHaveBeenCalledWith({ where: { id: "abc123" } });
+		expect(mockFindUnique).toHaveBeenCalledWith({ where: { id: "abc123" }, include: {category: true} });
 		expect(statusMock).toHaveBeenCalledWith(200);
 		expect(jsonMock).toHaveBeenCalledWith({ success: true, data: mockProduct });
 	});

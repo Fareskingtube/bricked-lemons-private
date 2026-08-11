@@ -13,60 +13,61 @@ interface CreateOrderInput {
 
 export const createOrder = async (req: Request, res: Response) => {
 	const userId = req.user?.id;
-	const { items }: CreateOrderInput = req.body;
 
 	if (!userId) {
 		return res.status(401).json({ message: "Invalid User ID please login" });
 	}
 
-	if (!items || items.length === 0) {
-		return res
-			.status(400)
-			.json({ message: "Order must contain at least one item" });
-	}
-
 	try {
-		const productIds = items.map((item) => item.product.id);
-		const products = await prismaPg.product.findMany({
-			where: { id: { in: productIds } },
+
+		const cart = await prismaPg.cart.findFirst({
+			where: { userId },
+			include: {
+				items: true,
+			},
 		});
 
-		if (products.length !== productIds.length) {
+		if (!cart || cart.items.length === 0) {
 			return res
 				.status(400)
-				.json({ message: "One or more products not found" });
+				.json({ message: "Cart is empty or does not exist. Add items before checking out." });
 		}
 
-		// Creating a hash map of each productId and it's price
-		const priceMap = new Map(
-			products.map((product) => [product.id, product.price]),
+		const OrderItemsData = cart.items.map((item) => ({
+			productId: item.productId,
+			quantity: item.quantity,
+			price: item.price,
+		}));
+
+		const totalAmount = cart.items.reduce(
+			(acc, item) =>  acc + item.price.mul(item.quantity).toNumber(),
+			0,
 		);
 
-        // Calculating total price of order
-		let totalAmount = 0;
-		const orderItemsData = items.map((item) => {
-			const price = priceMap.get(item.product.id)!;
-			totalAmount += Number(price) * item.quantity;
-			return {
-				productId: item.product.id,
-				quantity: item.quantity,
-				price,
-			};
-		});
-
-        // Creating order with Pending status
-		const order = await prismaPg.order.create({
-			data: {
-				userId: userId,
-				totalAmount: totalAmount,
-				status: "PENDING",
-				items: {
-					create: orderItemsData,
+		const [order] = await prismaPg.$transaction([
+			prismaPg.order.create({
+				data: {
+					userId: userId,
+					totalAmount: totalAmount,
+					status: "PENDING",
+					items: {
+						create: OrderItemsData,
+					},
 				},
-			},
-			include: { items: { include: { product: true } } },
-		});
-		res.status(201).json({message: "Order created successfully", order});
+				include: { items: { include: { product: true } } }, 
+			}),
+
+			prismaPg.cartItem.deleteMany({
+				where: { cartId: cart.id },
+			}),
+
+			prismaPg.cart.update({
+				where: { id: cart.id },
+				data: { totalAmount: 0 },
+			}),
+		]);
+
+		return res.status(201).json({ message: "Order created successfully", order });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).json({ message: "Internal server error", error });

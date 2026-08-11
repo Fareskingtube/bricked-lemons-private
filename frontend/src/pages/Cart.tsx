@@ -1,72 +1,83 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ProductCard } from "../components/ProductCard";
-import { usePostOrder, type CartItem } from "../hooks/UseOrder";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../hooks/UseUser";
+import { useCart } from "../hooks/UseCart";
+import { usePostOrder } from "../hooks/UseOrder";
 import { AxiosError } from "axios";
 
 function Cart() {
-	const [cart, setCart] = useState<CartItem[]>(() => {
-		try {
-			const storedCart = localStorage.getItem("cart");
-			return storedCart ? JSON.parse(storedCart) : [];
-		} catch {
-			return [];
-		}
-	});
+	const { user, loading } = useUser();
+	const { data: cart } = useCart();
 
-	const {
-		mutate: postOrder,
-		isSuccess: isSuccess,
-		isPending: isPending,
-		error: error,
-	} = usePostOrder();
+	const navigate = useNavigate();
+	useEffect(() => {
+		if (loading) return;
+		if (!user) {
+			navigate("/login");
+			toast.error("Please log in to use the cart");
+		}
+	}, [user, loading, navigate]);
+
+	// TODO: change up order system
+	const { mutate: postOrder } = usePostOrder();
 
 	const handleCreateOrder = () => {
-		if (!cart || cart.length === 0) {
+		if (!cart || cart.items.length === 0) {
 			toast.error("Cart is empty");
 			return;
 		}
-		postOrder({ CartItems: cart });
-	};
-
-	useEffect(() => {
-		if (isPending) {
+		if (loading) {
+			toast.loading("User is loading please try again later", {
+				duration: 4000,
+			});
+			return;
+		}
+		if (!user) {
+			navigate("/login");
+			toast.error("Please log in to use the cart");
 			return;
 		}
 
-		if (isSuccess) {
-			toast.success("Order created successfully");
-		}
+		const toastId = toast.loading("Creating order...");
 
-		if (error) {
-			if (error instanceof AxiosError) {
-				if (error.response) {
-					if (error.response?.status === 401) {
-						toast.error("Please login to place your order");
-						return;
+		postOrder(undefined, {
+			onSuccess: () => {
+				toast.success("Order created successfully", { id: toastId });
+			},
+			onError: (error) => {
+				if (error instanceof AxiosError) {
+					if (error.response) {
+						if (error.response?.status === 401) {
+							toast.error("Please login to place your order", { id: toastId });
+							return;
+						}
+						// The server responded with a status code outside the 2xx range
+						console.error("Server Error Data:", error.response.data);
+						console.error("Status Code:", error.response.status);
+
+						// Target your API's custom message layout (e.g., { message: "..." })
+						const apiMessage =
+							error.response.data?.message || "Server error occurred";
+						toast.error(`Error: ${apiMessage}`, { id: toastId });
+					} else if (error.request) {
+						// The request was made but no response was received (e.g., network down)
+						console.error("No Response Received:", error.request);
+						toast.error("Network error: Couldn't Connect to servers.", { id: toastId });
+					} else {
+						// Something happened setting up the request
+						console.error("Request Setup Error:", error.message);
+						toast.error(`Config Error: ${error.message}`, { id: toastId });
 					}
-					// The server responded with a status code outside the 2xx range
-					console.error("Server Error Data:", error.response.data);
-					console.error("Status Code:", error.response.status);
-
-					// Target your API's custom message layout (e.g., { message: "..." })
-					const apiMessage =
-						error.response.data?.message || "Server error occurred";
-					toast.error(`Error: ${apiMessage}`);
-				} else if (error.request) {
-					// The request was made but no response was received (e.g., network down)
-					console.error("No Response Received:", error.request);
-					toast.error("Network error: Couldn't Connect to servers.");
 				} else {
-					// Something happened setting up the request
-					console.error("Request Setup Error:", error.message);
-					toast.error(`Config Error: ${error.message}`);
+					toast.error("An unexpected error has occurred", { id: toastId });
 				}
-			} else {
-				toast.error("An unexpected error has occurred");
-			}
-		}
-	}, [error, isSuccess, isPending]);
+				console.log(error);
+			},
+		});
+	};
+
 
 	return (
 		<div className="w-screen h-screen mt-10">
@@ -76,34 +87,25 @@ function Cart() {
 			>
 				<h1>
 					Cart (
-					{cart.reduce(
+					{cart?.items.reduce(
 						(accumulator, currentItem) => accumulator + currentItem.quantity,
 						0,
 					)}{" "}
 					Items)
 				</h1>
-				<div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] w-full gap-4 items-center justify-center">
-					{cart.map((cartItem) => (
+				<div className="flex flex-wrap gap-4 items-start justify-center w-full">
+					{cart?.items.map((cartItem) => (
 						<ProductCard
 							key={cartItem.product.id}
 							product={cartItem.product}
 							quantity={cartItem.quantity}
-							setCart={setCart}
 						/>
 					))}
 				</div>
 				<div className="flex flex-col items-center">
 					<div className="flex">
 						<h1>Total: </h1>
-						<h1 className="text-primary-500">
-							$
-							{cart.reduce(
-								(accumulator, currentItem) =>
-									accumulator +
-									currentItem.product.price * currentItem.quantity,
-								0,
-							)}
-						</h1>
+						<h1 className="text-primary-500 ml-2">${cart?.totalAmount || 0}</h1>
 					</div>
 					<button
 						onClick={handleCreateOrder}

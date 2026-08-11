@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import ProductRouter from "./routes/productsRouter.js";
 import AuthRouter from "./routes/authRouter.js";
 import OrderRouter from "./routes/orderRoutes.ts";
+import CartRouter from "./routes/cartRoute.ts";
 import { connectDBs, disconnectDBs } from "./config/dbs.ts";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -28,6 +29,7 @@ const PORT = process.env.PORT || 5000;
 app.use("/api/products", ProductRouter);
 app.use("/api/auth", AuthRouter);
 app.use("/api/orders", OrderRouter);
+app.use("/api/cart", CartRouter);
 
 let server: ReturnType<typeof app.listen>;
 
@@ -63,4 +65,4 @@ process.on("SIGTERM", async () => {
 	});
 });
 
-export default app
+export default app;

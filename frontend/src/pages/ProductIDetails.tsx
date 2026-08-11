@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import type { Product } from "./Products";
 import toast from "react-hot-toast";
 import renderStars from "../util/renderStarts";
-import type { CartItem } from "../hooks/UseOrder";
+import { useAddCart } from "../hooks/UseCart";
 import { useProductById } from "../hooks/UseProducts";
 import { useUser } from "../hooks/UseUser";
 import StarRatingInput from "../components/InputStarRating";
@@ -12,7 +12,7 @@ import { useCreateReview } from "../hooks/UseReview";
 
 function ProductItem() {
 	const { id } = useParams();
-	const { user } = useUser();
+	const { user, loading } = useUser();
 
 	const [currentImage, setCurrentImage] = useState(0);
 	const [rating, setRating] = useState(0);
@@ -21,6 +21,40 @@ function ProductItem() {
 	const { data, error } = useProductById(id);
 
 	const product: Product = data?.data;
+
+	const { mutate: addCart } = useAddCart();
+
+	const navigate = useNavigate();
+
+	const handleAddCart = () => {
+		if (loading) {
+			toast.loading("User is loading please try again later", {
+				duration: 4000,
+			});
+			return;
+		}
+
+		if (!user) {
+			navigate("/login");
+			toast.error("Please log in to use the cart");
+			return;
+		}
+
+		const toastId = toast.loading("Adding to cart...");
+
+		addCart(
+			{ productId: product.id },
+			{
+				onSuccess: () => {
+					toast.success("Added to cart successfully", { id: toastId });
+				},
+				onError: (error) => {
+					toast.error("Failed to add item to cart", { id: toastId });
+					console.log(error);
+				},
+			},
+		);
+	};
 
 	useEffect(() => {
 		if (!error) return;
@@ -48,87 +82,7 @@ function ProductItem() {
 		}
 	}, [error]);
 
-	const handleAddQuantity = () => {
-		const storedCart = localStorage.getItem("cart");
-		const savedCart: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
-
-		if (!product) return;
-		const cartItem = savedCart.find((item) => item.product.id === product.id);
-
-		if (!cartItem) return;
-		cartItem.quantity += 1;
-
-		localStorage.setItem("cart", JSON.stringify(savedCart));
-	};
-
-	const handleAddCart = () => {
-		const storedCart = localStorage.getItem("cart");
-
-		const savedCart: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
-
-		if (!product) return;
-		const cartItemExists = savedCart.find(
-			(item) => item.product.id === product.id,
-		);
-
-		if (cartItemExists) {
-			handleAddQuantity();
-			return;
-		}
-
-		const newCartItem: CartItem = {
-			product: product,
-			quantity: 1,
-		};
-
-		localStorage.setItem("cart", JSON.stringify([...savedCart, newCartItem]));
-	};
-
-	const {
-		mutate: createReview,
-		isSuccess,
-		isPending,
-		error: reviewError,
-	} = useCreateReview(id);
-
-	useEffect(() => {
-		if (isPending) {
-			return;
-		}
-
-		if (isSuccess) {
-			toast.success("Review created successfully");
-		}
-
-		if (reviewError) {
-			if (reviewError instanceof AxiosError) {
-				if (reviewError.response) {
-					if (reviewError.response?.status === 401) {
-						toast.error("Please login to write a review");
-						return;
-					}
-					// The server responded with a status code outside the 2xx range
-					console.error("Server Error Data:", reviewError.response.data);
-					console.error("Status Code:", reviewError.response.status);
-
-					// Target your API's custom message layout (e.g., { message: "..." })
-					const apiMessage =
-						reviewError.response.data?.message || "Server error occurred";
-					toast.error(`Error: ${apiMessage}`);
-				} else if (reviewError.request) {
-					// The request was made but no response was received (e.g., network down)
-					console.error("No Response Received:", reviewError.request);
-					toast.error("Network error: Couldn't Connect to servers.");
-				} else {
-					// Something happened setting up the request
-					console.error("Request Setup Error:", reviewError.message);
-					toast.error(`Config Error: ${reviewError.message}`);
-				}
-			} else {
-				toast.error("An unexpected error has occurred");
-			}
-		}
-	}, [reviewError, isSuccess, isPending]);
+	const { mutate: createReview } = useCreateReview(id);
 
 	const resetFields = () => {
 		setRating(0);
@@ -141,11 +95,49 @@ function ProductItem() {
 			toast.error("Review is empty");
 			return;
 		}
-		createReview({
-			id: id ?? "",
-			comment: review,
-			rating: rating,
-		});
+		const toastId = toast.loading("Creating review");
+		createReview(
+			{
+				id: id ?? "",
+				comment: review,
+				rating: rating,
+			},
+			{
+				onSuccess: () => {
+					toast.success("Review created successfully", { id: toastId });
+				},
+				onError: (error) => {
+					if (error instanceof AxiosError) {
+						if (error.response) {
+							if (error.response?.status === 401) {
+								toast.error("Please login to write a review", { id: toastId });
+								return;
+							}
+							// The server responded with a status code outside the 2xx range
+							console.error("Server Error Data:", error.response.data);
+							console.error("Status Code:", error.response.status);
+
+							// Target your API's custom message layout (e.g., { message: "..." })
+							const apiMessage =
+								error.response.data?.message || "Server error occurred";
+							toast.error(`Error: ${apiMessage}`, { id: toastId });
+						} else if (error.request) {
+							// The request was made but no response was received (e.g., network down)
+							console.error("No Response Received:", error.request);
+							toast.error("Network error: Couldn't Connect to servers.", {
+								id: toastId,
+							});
+						} else {
+							// Something happened setting up the request
+							console.error("Request Setup Error:", error.message);
+							toast.error(`Config Error: ${error.message}`, { id: toastId });
+						}
+					} else {
+						toast.error("An unexpected error has occurred", { id: toastId });
+					}
+				},
+			},
+		);
 		resetFields();
 	};
 
@@ -178,7 +170,7 @@ function ProductItem() {
 				</div>
 				<div className="flex flex-col">
 					<h2>{product?.name}</h2>
-					<h3 className="-mt-1.5">Category: {product?.category}</h3>
+					<h3 className="-mt-1.5">Category: {product?.category.name}</h3>
 					<div className="flex mt-1">
 						<div className="flex text-lg">
 							{renderStars(product.reviewRating)}
