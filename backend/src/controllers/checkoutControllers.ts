@@ -58,7 +58,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 			cart.items.map(async (item) => {
 				const itemWithImgUrl = await getProductWithImageUrl(item.product);
 				const amount = Math.round(itemWithImgUrl.price * 100);
-				totalAmount += amount;
+				totalAmount += amount * item.quantity;
 
 				const images = itemWithImgUrl.imageUrls.filter(
 					(url): url is string => url !== null,
