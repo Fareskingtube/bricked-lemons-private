@@ -16,19 +16,21 @@ type VariantType = keyof typeof THEME_VARIANTS;
 
 interface CategoryCardProps {
 	title: string;
+	slug: string
 	variant?: VariantType;
 }
 
 function CategoryCard({
 	variant = "amber",
 	title,
+	slug,
 	children,
 }: PropsWithChildren<CategoryCardProps>) {
 	const variantClass = THEME_VARIANTS[variant] || THEME_VARIANTS.amber;
 
 	return (
 		<Link 
-			to={"/products"}
+			to={`/products?category=${slug}`}
 			className={`h-70 min-w-[10vw] ${variantClass} rounded-2xl relative grid grid-rows-[1fr_3fr] gap-3 place-content-center place-items-center overflow-hidden shadow-[2px_2px_15px_transparent] dark:hover:shadow-accent-600/30 hover:shadow-black/75 transition-all duration-300`}
 		>
 			<h3 className="text-950 dark:text-text-50 font-bold z-1 absolute top-5">{title}</h3>

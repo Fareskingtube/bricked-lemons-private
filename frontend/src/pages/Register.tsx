@@ -16,11 +16,18 @@ function Register() {
 	const { fetchUser } = useUser();
 	const navigate = useNavigate();
 
+	const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 	// On submit query database for user and show toast based on Error or success
 	const handleSubmit = async () => {
 		// If email or password are empty how error toast
 		if (!forum.username || !forum.email || !forum.password) {
 			toast.error("Email and Password are required");
+			return;
+		}
+		// Test if email is valid email
+		if (!EMAIL_REGEX.test(forum.email)) {
+			toast.error("Please enter a valid email address");
 			return;
 		}
 		try {

@@ -2,7 +2,12 @@ import { BiCart } from "react-icons/bi";
 import { AiOutlineUser } from "react-icons/ai";
 import { BiSearchAlt2 } from "react-icons/bi";
 import { BiChevronDown } from "react-icons/bi";
-import { Link, useNavigate } from "react-router-dom";
+import {
+	Link,
+	useLocation,
+	useNavigate,
+	useSearchParams,
+} from "react-router-dom";
 import Dropdown from "./Dropdown";
 import { useState } from "react";
 import { useUser } from "../hooks/UseUser";
@@ -14,20 +19,43 @@ function Navbar() {
 
 	const [isOpen, setIsOpen] = useState(false);
 
+	const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 	const handleToggleDropdown = () => {
 		setIsOpen(!isOpen);
 	};
 
+	const categories = [
+		{ name: "GPU", slug: "gpu" },
+		{ name: "CPU", slug: "cpu" },
+		{ name: "RAM", slug: "ram" },
+		{ name: "Storage", slug: "storage" },
+		{ name: "Monitor", slug: "monitor" },
+		{ name: "Peripherals", slug: "peripherals" },
+		{ name: "Networking", slug: "networking" },
+		{ name: "Audio", slug: "audio" },
+	];
+
+	const [searchParams] = useSearchParams();
+	const currentCategory = searchParams.get("category") ?? "";
+
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
 			const search = e.currentTarget.value;
-			if (!search) {
-				navigate("/products");
-				return;
+			const params = new URLSearchParams(
+				location.pathname === "/products" ? location.search : "",
+			);
+
+			if (search.trim() === "") {
+				params.delete("search");
+			} else {
+				params.set("search", search);
 			}
-			navigate(`/products/search/${search}`);
+			params.delete("currentPage");
+
+			navigate(`/products?${params.toString()}`);
 		}
 	};
 
@@ -39,10 +67,35 @@ function Navbar() {
 						<h2 className="text-primary-500">Bricked Lemons</h2>
 					</Link>
 					<div className="flex lg:gap-8 gap-2">
-						<Link to="/categories" className="flex items-center">
-							<h3>Categories</h3>
-							<BiChevronDown className="text-text-900 w-5" />
-						</Link>
+						<div className="relative">
+							<button
+								className="flex items-center"
+								onClick={() => {
+									setIsCategoryOpen(!isCategoryOpen);
+								}}
+							>
+								<h3>Categories</h3>
+								<BiChevronDown
+									className={`text-text-900 w-5 ${isCategoryOpen && "rotate-180"}`}
+								/>
+							</button>
+							{/* SCGF (Small Claude Generated Function) */}
+							{isCategoryOpen && (
+								<ul className="absolute top-full left-0 mt-2 bg-background-50 border border-background-100 shadow-md rounded-md py-1 z-10">
+									{categories.map((cat) => (
+										<li key={cat.slug}>
+											<Link
+												to={`/products?category=${encodeURIComponent(cat.slug)}`}
+												className={`block px-4 py-2  hover:text-text-500 ${cat.slug === currentCategory ? "text-text-500" : "text-text-900"}`}
+												onClick={() => setIsCategoryOpen(false)}
+											>
+												{cat.name}
+											</Link>
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
 						<Link to="/deals">
 							<h3>Deals</h3>
 						</Link>
