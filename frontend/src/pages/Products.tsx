@@ -98,6 +98,7 @@ function Products() {
 						<h1 className="text-[clamp(1.8rem,3vw,5rem)] text-accent-600">
 							Get All The PC Components You Need Here.
 						</h1>
+						{/* TODO: Handle this better */}
 						<Link
 							to="/cart"
 							className="ml-4 w-fit p-3 dark:bg-secondary-200 bg-secondary-500 rounded-4xl hover:scale-110 

@@ -21,7 +21,7 @@ function Cart() {
 	}, [user, loading, navigate]);
 
 	// TODO: change up order system
-	const { mutate: postOrder } = usePostOrder();
+	const { mutate: postOrder, isPending } = usePostOrder();
 
 	const handleCreateOrder = () => {
 		if (!cart || cart.items.length === 0) {
@@ -108,7 +108,7 @@ function Cart() {
 						<h1 className="text-primary-500 ml-2">${cart?.totalAmount || 0}</h1>
 					</div>
 					<button
-						onClick={handleCreateOrder}
+						onClick={handleCreateOrder} disabled={isPending}
 						className="w-fit p-3 rounded-2xl mt-4 mb-1 bg-primary-500 hover:bg-primary-600 transition-colors duration-100 "
 					>
 						<span className="font-bold dark:text-accent-100 text-accent-900">
