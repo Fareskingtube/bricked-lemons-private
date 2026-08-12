@@ -98,10 +98,10 @@ function Navbar() {
 								</ul>
 							)}
 						</div>
-						<Link to="/deals">
+						<Link to="/products?orderDirection=asc&orderBy=price">
 							<h3>Deals</h3>
 						</Link>
-						<Link to="/new">
+						<Link to="/products?orderDirection=desc&orderBy=createdAt">
 							<h3>What's New</h3>
 						</Link>
 					</div>

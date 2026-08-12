@@ -3,6 +3,7 @@ interface SelectProps<T extends string | number> {
 	slug: string;
 	options: T[];
 	updateParams: (updates: Record<string, string | number | null>) => void;
+	searchParams: URLSearchParams
 	default?: T;
 	values?: T[];
 }
@@ -12,10 +13,12 @@ export function Select<T extends string | number>({
 	slug,
 	options,
 	updateParams,
+	searchParams,
 	default: defaultValue,
 	values,
 }: SelectProps<T>) {
 	const activeValues = values ?? options;
+	const currentValue = searchParams.get(slug) ?? defaultValue ?? "";
 	if (activeValues?.length !== options.length)
 		console.warn(
 			`Provided Values and Options for: ${name} filter aren't aren't the same number`,
@@ -28,9 +31,9 @@ export function Select<T extends string | number>({
                     [&::picker-icon]:transition-transform [&:open::picker-icon]:rotate-180
                     dark:bg-accent-900 bg-accent-300 p-1.5 rounded-2xl font-medium px-2.5"
 			onChange={(e) => {
-				updateParams({[slug]: e.target.value as T});
+				updateParams({ [slug]: e.target.value as T });
 			}}
-			defaultValue={defaultValue ? defaultValue : ""}
+			value={currentValue}
 		>
 			<option
 				value=""

@@ -153,12 +153,14 @@ function Products() {
 							"audio",
 						]}
 						updateParams={updateParams}
+						searchParams={searchParams}
 					/>
 					<Select
 						name="Limit"
 						slug="limit"
 						options={[5, 10, 20, 30, 50, 100] as number[]}
 						updateParams={updateParams}
+						searchParams={searchParams}
 					/>
 					<Select
 						name="Min Price"
@@ -166,6 +168,7 @@ function Products() {
 						options={[10, 100, 200, 300, 400, 500, 800, 1000, 1200] as number[]}
 						values={[9, 99, 199, 299, 399, 499, 799, 999, 1199] as number[]}
 						updateParams={updateParams}
+						searchParams={searchParams}
 					/>
 					<Select
 						name="Max Price"
@@ -174,6 +177,7 @@ function Products() {
 							[30, 100, 200, 300, 400, 500, 800, 1000, 1200, 1600] as number[]
 						}
 						updateParams={updateParams}
+						searchParams={searchParams}
 					/>
 				</div>
 				<div className="flex gap-5">
@@ -183,6 +187,7 @@ function Products() {
 						options={["Ascending", "Descending"] as string[]}
 						values={["asc", "desc"]}
 						updateParams={updateParams}
+						searchParams={searchParams}
 					/>
 					<Select
 						name="Sort By"
@@ -190,6 +195,7 @@ function Products() {
 						options={["Recent", "Price", "Rating", "Name"] as string[]}
 						values={["createdAt", "price", "reviewRating", "name"] as string[]}
 						updateParams={updateParams}
+						searchParams={searchParams}
 					/>
 				</div>
 			</div>
