@@ -8,7 +8,6 @@ const getIdentifier = (req: Request): string => {
 	const token = req.cookies?.token
 	const secret: Secret = Buffer.from(requireEnv("JWT_SECRET"), "base64");
 	if (token) {
-		console.log("log", jwt.verify(token, secret));
 		try {
 			const decoded = jwt.verify(token, secret) as {
 				id: string;
