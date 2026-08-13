@@ -29,13 +29,14 @@ app.use(
 	}),
 );
 
+app.use(cookieParser());
+
 app.use(rateLimiter);
 
 app.use("/api/webhooks/", WebhookRouter);
 
 app.use(express.json());
 
-app.use(cookieParser());
 
 const PORT = process.env.PORT || 5000;
 

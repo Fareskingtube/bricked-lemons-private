@@ -1,13 +1,16 @@
 import type { NextFunction, Request, Response } from "express";
 import { ratelimit } from "../config/upstash.ts";
-import jwt from "jsonwebtoken";
+import jwt, { type Secret } from "jsonwebtoken";
+import { requireEnv } from "../config/env.ts";
 
 // A SCGF (Small Claude Generated Function)
 const getIdentifier = (req: Request): string => {
-	const token = req.cookies?.token;
+	const token = req.cookies?.token
+	const secret: Secret = Buffer.from(requireEnv("JWT_SECRET"), "base64");
 	if (token) {
+		console.log("log", jwt.verify(token, secret));
 		try {
-			const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+			const decoded = jwt.verify(token, secret) as {
 				id: string;
 			};
 			return `user:${decoded.id}`;

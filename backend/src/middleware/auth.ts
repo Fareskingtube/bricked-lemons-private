@@ -38,7 +38,7 @@ export const protect = async (
 		// Parsing JWT_SECRET with base64 and casting it to Secret
 		const secret: Secret = Buffer.from(requireEnv("JWT_SECRET"), "base64");
 		// Verifying JWT integrity
-		const decoded = jwt.verify(token, secret) as AuthTokenPayload;
+		const decoded = jwt.verify(token, secret) as AuthTokenPayload; 
 
 		const user = await prismaPg.user.findUnique({
 			where: { id: decoded.id },
