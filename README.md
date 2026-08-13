@@ -52,6 +52,7 @@
 - A Gmail address with **app** password ([Get from Here](https://nodejs.org/https://myaccount.google.com/apppasswords))
 - [Cloudflare R2 Bucket](#cloudflare-r2-bucket-setup)
 - Have a [Stripe](https://stripe.com/) Account
+- An [Upstash Redis Database](https://upstash.com/) for rate limiting
 
 #### **Quick Start:**
 
@@ -85,6 +86,8 @@ Now if you open up `http://localhost:5173/` You should see the home page and tha
 - [PostgreSQL](https://www.postgresql.org/) Database (**Local** or **Remote**)
 - [MongoDB](https://www.mongodb.com/) Database (**Local** or **[Remote](https://www.mongodb.com/products/platform/atlas-database)**)
 - Have a [Stripe](https://stripe.com/) Account
+- An [Upstash Redis Database](https://upstash.com/) for rate limiting
+
 
 Run:
 

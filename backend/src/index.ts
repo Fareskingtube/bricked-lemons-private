@@ -9,6 +9,8 @@ import WebhookRouter from "./routes/webhookRoutes.ts";
 import { connectDBs, disconnectDBs } from "./config/dbs.ts";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
+import { rateLimiter } from "./middleware/ratelimite.ts";
 
 const app = express();
 
@@ -16,12 +18,18 @@ dotenv.config();
 
 const CORS_ORIGIN = process.env.FRONTEND_URL || "http://localhost:5173/";
 
+app.set("trust proxy", 1);
+
+app.use(helmet());
+
 app.use(
 	cors({
 		origin: CORS_ORIGIN,
 		credentials: true,
 	}),
 );
+
+app.use(rateLimiter);
 
 app.use("/api/webhooks/", WebhookRouter);
 
