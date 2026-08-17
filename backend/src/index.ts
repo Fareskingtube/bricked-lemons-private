@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import HealthRouter from "./routes/healthRouter.ts";
 import ProductRouter from "./routes/productsRouter.js";
 import AuthRouter from "./routes/authRouter.js";
 import OrderRouter from "./routes/orderRoutes.ts";
@@ -40,6 +41,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
+app.use("/api/health", HealthRouter)
 app.use("/api/products", ProductRouter);
 app.use("/api/auth", AuthRouter);
 app.use("/api/orders", OrderRouter);

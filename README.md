@@ -121,7 +121,7 @@ npm run start
 
 Now if you open up `http://localhost:5173/` You should see the home page and that everything is working
 
-
+<!-- TODO: Add the routs to the endpoints -->
 ## Endpoints
 
 ### Frontend:
