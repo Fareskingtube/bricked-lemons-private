@@ -14,16 +14,16 @@ export const transport = nodemailer.createTransport({
 });
 
 // Checking if credentials are correct
-try {
-	transport.verify((err) => {
-		if (err) {
-			console.error(
-				"[mailer] Failed to authenticate with SMTP server:",
-				err.message,
-			);
-			process.exit(1);
-		}
-	});
-} catch (error) {
-	console.log("Node mailer error: ", error);
-}
+transport.verify((err) => {
+	if (err) {
+		console.error(
+			"[mailer] Failed to authenticate with SMTP server:",
+			err.message,
+		);
+		console.error(
+			"[mailer] Email sending will fail until this is fixed. ",
+		);
+	} else {
+		console.log("[mailer] SMTP connection verified.");
+	}
+});
