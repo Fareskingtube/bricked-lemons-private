@@ -162,6 +162,7 @@ AI was usage was limited to only helping debugging and wasn't used majorly at al
 1. Helped a lot in making of the `handleStripeWebhook` at  `backend/src/controllers/webhookControllers` (Only web hook logic not order creation logic)
 1. Writing 2 Small prisma calls in `backend/src/controller/checkoutControllers/createCheckoutSession` around `Line 32` for making a stripeCustomerId
 1. Writing a small dropdown without styling at `frontend/src/components/Navbar` around `Line 64`
+1. The CI/CD pipeline at `.github/workflows/ci.yml`
 
 ### Any borrowed code has it's sources stated clearly above it
 
