@@ -7,7 +7,7 @@ build
 dist
 
 # Keep environment variables out of docker
-.env
+.env*
 
 # Generated
 generated
