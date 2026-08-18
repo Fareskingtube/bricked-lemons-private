@@ -132,10 +132,26 @@ Now if you open up `http://localhost:5173/` You should see the home page and tha
 ### Frontend:
 
 - `http://localhost:5173`
+    - `/` The homepage
+    - `/login` For logging into an account
+    - `/register` For creating an account
+    - `/products` For browsing the products
+    - `/products/:id` For for seeing a product info by id
+    - `/cart` For seeing the cart and checking out 
+    - `/profile` For seeing/editing your account info
+    - `/admin` For adding products/making people other accounts admin
+    - `/payment/success` For after completing a payment and creating an order
 
 ### Backend:
 
 - Express Server: `http://localhost:5000/api` (Port `5000` by default edit at `/backend/.env`)
+    - `/health` For health check
+    - `/products` For creating/getting products
+    - `/auth` For login/registering
+    - `/orders` For creating orders (Deprecated)/getting orders
+    - `/cart` For all the cart operations
+    - `/checkout` For creating a checkout session
+    - `/webhooks` For webhooks
 
 #### Docker:
 
